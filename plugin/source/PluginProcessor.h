@@ -49,6 +49,9 @@ class AudioPluginAudioProcessor : public juce::AudioProcessor
   private:
 	juce::AudioProcessorValueTreeState::ParameterLayout createParameters();
 	EQParams getEQParams();
+	void updatePeakFilter(const EQParams &params, const double sampleRate);
+	void updateLowCutFilter(const EQParams &params, const double sampleRate);
+	void updateHighCutFilter(const EQParams &params, const double sampleRate);
 
 	juce::AudioProcessorValueTreeState apvts{*this, nullptr, "Parameters", createParameters()};
 	MonoFilter rightChannelFilter, leftChannelFilter;

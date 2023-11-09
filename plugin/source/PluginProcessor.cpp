@@ -100,150 +100,9 @@ void AudioPluginAudioProcessor::prepareToPlay(double sampleRate, int samplesPerB
 
 	auto parameters = getEQParams();
 
-	auto peakCoefficients = juce::dsp::IIR::Coefficients<float>::makePeakFilter(
-		sampleRate, parameters.peakFreq, parameters.peakQuality, juce::Decibels::decibelsToGain(parameters.peakGainDb));
-
-	*leftChannelFilter.get<ChainPositions::Peak>().coefficients = *peakCoefficients;
-	*rightChannelFilter.get<ChainPositions::Peak>().coefficients = *peakCoefficients;
-
-	auto lowCutCoefficients = juce::dsp::FilterDesign<float>::designIIRHighpassHighOrderButterworthMethod(
-		parameters.lowCutFreq, sampleRate, 2 * (parameters.lowCutSlope + 1));
-
-	auto &leftLowCut = leftChannelFilter.get<ChainPositions::LowCut>();
-	auto &rightLowCut = rightChannelFilter.get<ChainPositions::LowCut>();
-
-	leftLowCut.setBypassed<0>(true);
-	rightLowCut.setBypassed<0>(true);
-	leftLowCut.setBypassed<1>(true);
-	rightLowCut.setBypassed<1>(true);
-	leftLowCut.setBypassed<2>(true);
-	rightLowCut.setBypassed<2>(true);
-	leftLowCut.setBypassed<3>(true);
-	rightLowCut.setBypassed<3>(true);
-
-	switch (parameters.lowCutSlope)
-	{
-	case Slope::_12:
-		*leftLowCut.get<0>().coefficients = *lowCutCoefficients[0];
-		*rightLowCut.get<0>().coefficients = *lowCutCoefficients[0];
-		leftLowCut.template setBypassed<0>(false);
-		rightLowCut.template setBypassed<0>(false);
-		break;
-	case Slope::_24:
-		*leftLowCut.get<0>().coefficients = *lowCutCoefficients[0];
-		*rightLowCut.get<0>().coefficients = *lowCutCoefficients[0];
-		*leftLowCut.get<1>().coefficients = *lowCutCoefficients[1];
-		*rightLowCut.get<1>().coefficients = *lowCutCoefficients[1];
-		leftLowCut.template setBypassed<0>(false);
-		rightLowCut.template setBypassed<0>(false);
-		leftLowCut.template setBypassed<1>(false);
-		rightLowCut.template setBypassed<1>(false);
-		break;
-	case Slope::_36:
-		*leftLowCut.get<0>().coefficients = *lowCutCoefficients[0];
-		*rightLowCut.get<0>().coefficients = *lowCutCoefficients[0];
-		*leftLowCut.get<1>().coefficients = *lowCutCoefficients[1];
-		*rightLowCut.get<1>().coefficients = *lowCutCoefficients[1];
-		*leftLowCut.get<2>().coefficients = *lowCutCoefficients[2];
-		*rightLowCut.get<2>().coefficients = *lowCutCoefficients[2];
-		leftLowCut.template setBypassed<0>(false);
-		rightLowCut.template setBypassed<0>(false);
-		leftLowCut.template setBypassed<1>(false);
-		rightLowCut.template setBypassed<1>(false);
-		leftLowCut.template setBypassed<2>(false);
-		rightLowCut.template setBypassed<2>(false);
-		break;
-	case Slope::_48:
-		*leftLowCut.get<0>().coefficients = *lowCutCoefficients[0];
-		*rightLowCut.get<0>().coefficients = *lowCutCoefficients[0];
-		*leftLowCut.get<1>().coefficients = *lowCutCoefficients[1];
-		*rightLowCut.get<1>().coefficients = *lowCutCoefficients[1];
-		*leftLowCut.get<2>().coefficients = *lowCutCoefficients[2];
-		*rightLowCut.get<2>().coefficients = *lowCutCoefficients[2];
-		*leftLowCut.get<3>().coefficients = *lowCutCoefficients[3];
-		*rightLowCut.get<3>().coefficients = *lowCutCoefficients[3];
-		leftLowCut.template setBypassed<0>(false);
-		rightLowCut.template setBypassed<0>(false);
-		leftLowCut.template setBypassed<1>(false);
-		rightLowCut.template setBypassed<1>(false);
-		leftLowCut.template setBypassed<2>(false);
-		rightLowCut.template setBypassed<2>(false);
-		leftLowCut.template setBypassed<3>(false);
-		rightLowCut.template setBypassed<3>(false);
-		break;
-	default:
-		jassertfalse;
-		break;
-	}
-	auto highCutCoefficients = juce::dsp::FilterDesign<float>::designIIRLowpassHighOrderButterworthMethod(
-		parameters.highCutFreq, sampleRate, 2 * (parameters.highCutSlope + 1));
-
-	auto &leftHighCut = leftChannelFilter.get<ChainPositions::HighCut>();
-	auto &rightHighCut = rightChannelFilter.get<ChainPositions::HighCut>();
-
-	leftHighCut.setBypassed<0>(true);
-	rightHighCut.setBypassed<0>(true);
-	leftHighCut.setBypassed<1>(true);
-	rightHighCut.setBypassed<1>(true);
-	leftHighCut.setBypassed<2>(true);
-	rightHighCut.setBypassed<2>(true);
-	leftHighCut.setBypassed<3>(true);
-	rightHighCut.setBypassed<3>(true);
-
-	switch (parameters.highCutSlope)
-	{
-	case Slope::_12:
-		*leftHighCut.get<0>().coefficients = *highCutCoefficients[0];
-		*rightHighCut.get<0>().coefficients = *highCutCoefficients[0];
-		leftHighCut.template setBypassed<0>(false);
-		rightHighCut.template setBypassed<0>(false);
-		break;
-	case Slope::_24:
-		*leftHighCut.get<0>().coefficients = *highCutCoefficients[0];
-		*rightHighCut.get<0>().coefficients = *highCutCoefficients[0];
-		*leftHighCut.get<1>().coefficients = *highCutCoefficients[1];
-		*rightHighCut.get<1>().coefficients = *highCutCoefficients[1];
-		leftHighCut.template setBypassed<0>(false);
-		rightHighCut.template setBypassed<0>(false);
-		leftHighCut.template setBypassed<1>(false);
-		rightHighCut.template setBypassed<1>(false);
-		break;
-	case Slope::_36:
-		*leftHighCut.get<0>().coefficients = *highCutCoefficients[0];
-		*rightHighCut.get<0>().coefficients = *highCutCoefficients[0];
-		*leftHighCut.get<1>().coefficients = *highCutCoefficients[1];
-		*rightHighCut.get<1>().coefficients = *highCutCoefficients[1];
-		*leftHighCut.get<2>().coefficients = *highCutCoefficients[2];
-		*rightHighCut.get<2>().coefficients = *highCutCoefficients[2];
-		leftHighCut.template setBypassed<0>(false);
-		rightHighCut.template setBypassed<0>(false);
-		leftHighCut.template setBypassed<1>(false);
-		rightHighCut.template setBypassed<1>(false);
-		leftHighCut.template setBypassed<2>(false);
-		rightHighCut.template setBypassed<2>(false);
-		break;
-	case Slope::_48:
-		*leftHighCut.get<0>().coefficients = *highCutCoefficients[0];
-		*rightHighCut.get<0>().coefficients = *highCutCoefficients[0];
-		*leftHighCut.get<1>().coefficients = *highCutCoefficients[1];
-		*rightHighCut.get<1>().coefficients = *highCutCoefficients[1];
-		*leftHighCut.get<2>().coefficients = *highCutCoefficients[2];
-		*rightHighCut.get<2>().coefficients = *highCutCoefficients[2];
-		*leftHighCut.get<3>().coefficients = *highCutCoefficients[3];
-		*rightHighCut.get<3>().coefficients = *highCutCoefficients[3];
-		leftHighCut.template setBypassed<0>(false);
-		rightHighCut.template setBypassed<0>(false);
-		leftHighCut.template setBypassed<1>(false);
-		rightHighCut.template setBypassed<1>(false);
-		leftHighCut.template setBypassed<2>(false);
-		rightHighCut.template setBypassed<2>(false);
-		leftHighCut.template setBypassed<3>(false);
-		rightHighCut.template setBypassed<3>(false);
-		break;
-	default:
-		jassertfalse;
-		break;
-	}
+	updatePeakFilter(parameters, sampleRate);
+	updateLowCutFilter(parameters, sampleRate);
+	updateHighCutFilter(parameters, sampleRate);
 }
 
 void AudioPluginAudioProcessor::releaseResources()
@@ -289,152 +148,9 @@ void AudioPluginAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, j
 
 	auto parameters = getEQParams();
 
-	auto peakCoefficients = juce::dsp::IIR::Coefficients<float>::makePeakFilter(
-		getSampleRate(), parameters.peakFreq, parameters.peakQuality,
-		juce::Decibels::decibelsToGain(parameters.peakGainDb));
-
-	*leftChannelFilter.get<ChainPositions::Peak>().coefficients = *peakCoefficients;
-	*rightChannelFilter.get<ChainPositions::Peak>().coefficients = *peakCoefficients;
-
-	auto lowCutCoefficients = juce::dsp::FilterDesign<float>::designIIRHighpassHighOrderButterworthMethod(
-		parameters.lowCutFreq, getSampleRate(), 2 * (parameters.lowCutSlope + 1));
-
-	auto &leftLowCut = leftChannelFilter.get<ChainPositions::LowCut>();
-	auto &rightLowCut = rightChannelFilter.get<ChainPositions::LowCut>();
-
-	leftLowCut.setBypassed<0>(true);
-	rightLowCut.setBypassed<0>(true);
-	leftLowCut.setBypassed<1>(true);
-	rightLowCut.setBypassed<1>(true);
-	leftLowCut.setBypassed<2>(true);
-	rightLowCut.setBypassed<2>(true);
-	leftLowCut.setBypassed<3>(true);
-	rightLowCut.setBypassed<3>(true);
-
-	switch (parameters.lowCutSlope)
-	{
-	case Slope::_12:
-		*leftLowCut.get<0>().coefficients = *lowCutCoefficients[0];
-		*rightLowCut.get<0>().coefficients = *lowCutCoefficients[0];
-		leftLowCut.template setBypassed<0>(false);
-		rightLowCut.template setBypassed<0>(false);
-		break;
-	case Slope::_24:
-		*leftLowCut.get<0>().coefficients = *lowCutCoefficients[0];
-		*rightLowCut.get<0>().coefficients = *lowCutCoefficients[0];
-		*leftLowCut.get<1>().coefficients = *lowCutCoefficients[1];
-		*rightLowCut.get<1>().coefficients = *lowCutCoefficients[1];
-		leftLowCut.template setBypassed<0>(false);
-		rightLowCut.template setBypassed<0>(false);
-		leftLowCut.template setBypassed<1>(false);
-		rightLowCut.template setBypassed<1>(false);
-		break;
-	case Slope::_36:
-		*leftLowCut.get<0>().coefficients = *lowCutCoefficients[0];
-		*rightLowCut.get<0>().coefficients = *lowCutCoefficients[0];
-		*leftLowCut.get<1>().coefficients = *lowCutCoefficients[1];
-		*rightLowCut.get<1>().coefficients = *lowCutCoefficients[1];
-		*leftLowCut.get<2>().coefficients = *lowCutCoefficients[2];
-		*rightLowCut.get<2>().coefficients = *lowCutCoefficients[2];
-		leftLowCut.template setBypassed<0>(false);
-		rightLowCut.template setBypassed<0>(false);
-		leftLowCut.template setBypassed<1>(false);
-		rightLowCut.template setBypassed<1>(false);
-		leftLowCut.template setBypassed<2>(false);
-		rightLowCut.template setBypassed<2>(false);
-		break;
-	case Slope::_48:
-		*leftLowCut.get<0>().coefficients = *lowCutCoefficients[0];
-		*rightLowCut.get<0>().coefficients = *lowCutCoefficients[0];
-		*leftLowCut.get<1>().coefficients = *lowCutCoefficients[1];
-		*rightLowCut.get<1>().coefficients = *lowCutCoefficients[1];
-		*leftLowCut.get<2>().coefficients = *lowCutCoefficients[2];
-		*rightLowCut.get<2>().coefficients = *lowCutCoefficients[2];
-		*leftLowCut.get<3>().coefficients = *lowCutCoefficients[3];
-		*rightLowCut.get<3>().coefficients = *lowCutCoefficients[3];
-		leftLowCut.template setBypassed<0>(false);
-		rightLowCut.template setBypassed<0>(false);
-		leftLowCut.template setBypassed<1>(false);
-		rightLowCut.template setBypassed<1>(false);
-		leftLowCut.template setBypassed<2>(false);
-		rightLowCut.template setBypassed<2>(false);
-		leftLowCut.template setBypassed<3>(false);
-		rightLowCut.template setBypassed<3>(false);
-		break;
-	default:
-		jassertfalse;
-		break;
-	}
-
-	auto highCutCoefficients = juce::dsp::FilterDesign<float>::designIIRLowpassHighOrderButterworthMethod(
-		parameters.highCutFreq, getSampleRate(), 2 * (parameters.highCutSlope + 1));
-
-	auto &leftHighCut = leftChannelFilter.get<ChainPositions::HighCut>();
-	auto &rightHighCut = rightChannelFilter.get<ChainPositions::HighCut>();
-
-	leftHighCut.setBypassed<0>(true);
-	rightHighCut.setBypassed<0>(true);
-	leftHighCut.setBypassed<1>(true);
-	rightHighCut.setBypassed<1>(true);
-	leftHighCut.setBypassed<2>(true);
-	rightHighCut.setBypassed<2>(true);
-	leftHighCut.setBypassed<3>(true);
-	rightHighCut.setBypassed<3>(true);
-
-	switch (parameters.highCutSlope)
-	{
-	case Slope::_12:
-		*leftHighCut.get<0>().coefficients = *highCutCoefficients[0];
-		*rightHighCut.get<0>().coefficients = *highCutCoefficients[0];
-		leftHighCut.template setBypassed<0>(false);
-		rightHighCut.template setBypassed<0>(false);
-		break;
-	case Slope::_24:
-		*leftHighCut.get<0>().coefficients = *highCutCoefficients[0];
-		*rightHighCut.get<0>().coefficients = *highCutCoefficients[0];
-		*leftHighCut.get<1>().coefficients = *highCutCoefficients[1];
-		*rightHighCut.get<1>().coefficients = *highCutCoefficients[1];
-		leftHighCut.template setBypassed<0>(false);
-		rightHighCut.template setBypassed<0>(false);
-		leftHighCut.template setBypassed<1>(false);
-		rightHighCut.template setBypassed<1>(false);
-		break;
-	case Slope::_36:
-		*leftHighCut.get<0>().coefficients = *highCutCoefficients[0];
-		*rightHighCut.get<0>().coefficients = *highCutCoefficients[0];
-		*leftHighCut.get<1>().coefficients = *highCutCoefficients[1];
-		*rightHighCut.get<1>().coefficients = *highCutCoefficients[1];
-		*leftHighCut.get<2>().coefficients = *highCutCoefficients[2];
-		*rightHighCut.get<2>().coefficients = *highCutCoefficients[2];
-		leftHighCut.template setBypassed<0>(false);
-		rightHighCut.template setBypassed<0>(false);
-		leftHighCut.template setBypassed<1>(false);
-		rightHighCut.template setBypassed<1>(false);
-		leftHighCut.template setBypassed<2>(false);
-		rightHighCut.template setBypassed<2>(false);
-		break;
-	case Slope::_48:
-		*leftHighCut.get<0>().coefficients = *highCutCoefficients[0];
-		*rightHighCut.get<0>().coefficients = *highCutCoefficients[0];
-		*leftHighCut.get<1>().coefficients = *highCutCoefficients[1];
-		*rightHighCut.get<1>().coefficients = *highCutCoefficients[1];
-		*leftHighCut.get<2>().coefficients = *highCutCoefficients[2];
-		*rightHighCut.get<2>().coefficients = *highCutCoefficients[2];
-		*leftHighCut.get<3>().coefficients = *highCutCoefficients[3];
-		*rightHighCut.get<3>().coefficients = *highCutCoefficients[3];
-		leftHighCut.template setBypassed<0>(false);
-		rightHighCut.template setBypassed<0>(false);
-		leftHighCut.template setBypassed<1>(false);
-		rightHighCut.template setBypassed<1>(false);
-		leftHighCut.template setBypassed<2>(false);
-		rightHighCut.template setBypassed<2>(false);
-		leftHighCut.template setBypassed<3>(false);
-		rightHighCut.template setBypassed<3>(false);
-		break;
-	default:
-		jassertfalse;
-		break;
-	}
+	updatePeakFilter(parameters, getSampleRate());
+	updateLowCutFilter(parameters, getSampleRate());
+	updateHighCutFilter(parameters, getSampleRate());
 
 	auto block = juce::dsp::AudioBlock<float>(buffer);
 	auto leftBlock = block.getSingleChannelBlock(0);
@@ -520,4 +236,159 @@ EQParams AudioPluginAudioProcessor::getEQParams()
 	p.highCutSlope = Slope::fromFloat(apvts.getRawParameterValue("HIGHCUT_SLOPE")->load());
 
 	return p;
+}
+
+void AudioPluginAudioProcessor::updatePeakFilter(const EQParams &parameters, const double sampleRate)
+{
+	auto peakCoefficients = juce::dsp::IIR::Coefficients<float>::makePeakFilter(
+		sampleRate, parameters.peakFreq, parameters.peakQuality, juce::Decibels::decibelsToGain(parameters.peakGainDb));
+
+	*leftChannelFilter.get<ChainPositions::Peak>().coefficients = *peakCoefficients;
+	*rightChannelFilter.get<ChainPositions::Peak>().coefficients = *peakCoefficients;
+}
+
+void AudioPluginAudioProcessor::updateLowCutFilter(const EQParams &parameters, const double sampleRate)
+{
+	auto lowCutCoefficients = juce::dsp::FilterDesign<float>::designIIRHighpassHighOrderButterworthMethod(
+		parameters.lowCutFreq, sampleRate, 2 * (parameters.lowCutSlope + 1));
+
+	auto &leftLowCut = leftChannelFilter.get<ChainPositions::LowCut>();
+	auto &rightLowCut = rightChannelFilter.get<ChainPositions::LowCut>();
+
+	leftLowCut.setBypassed<0>(true);
+	rightLowCut.setBypassed<0>(true);
+	leftLowCut.setBypassed<1>(true);
+	rightLowCut.setBypassed<1>(true);
+	leftLowCut.setBypassed<2>(true);
+	rightLowCut.setBypassed<2>(true);
+	leftLowCut.setBypassed<3>(true);
+	rightLowCut.setBypassed<3>(true);
+
+	switch (parameters.lowCutSlope)
+	{
+	case Slope::_12:
+		*leftLowCut.get<0>().coefficients = *lowCutCoefficients[0];
+		*rightLowCut.get<0>().coefficients = *lowCutCoefficients[0];
+		leftLowCut.template setBypassed<0>(false);
+		rightLowCut.template setBypassed<0>(false);
+		break;
+	case Slope::_24:
+		*leftLowCut.get<0>().coefficients = *lowCutCoefficients[0];
+		*rightLowCut.get<0>().coefficients = *lowCutCoefficients[0];
+		*leftLowCut.get<1>().coefficients = *lowCutCoefficients[1];
+		*rightLowCut.get<1>().coefficients = *lowCutCoefficients[1];
+		leftLowCut.template setBypassed<0>(false);
+		rightLowCut.template setBypassed<0>(false);
+		leftLowCut.template setBypassed<1>(false);
+		rightLowCut.template setBypassed<1>(false);
+		break;
+	case Slope::_36:
+		*leftLowCut.get<0>().coefficients = *lowCutCoefficients[0];
+		*rightLowCut.get<0>().coefficients = *lowCutCoefficients[0];
+		*leftLowCut.get<1>().coefficients = *lowCutCoefficients[1];
+		*rightLowCut.get<1>().coefficients = *lowCutCoefficients[1];
+		*leftLowCut.get<2>().coefficients = *lowCutCoefficients[2];
+		*rightLowCut.get<2>().coefficients = *lowCutCoefficients[2];
+		leftLowCut.template setBypassed<0>(false);
+		rightLowCut.template setBypassed<0>(false);
+		leftLowCut.template setBypassed<1>(false);
+		rightLowCut.template setBypassed<1>(false);
+		leftLowCut.template setBypassed<2>(false);
+		rightLowCut.template setBypassed<2>(false);
+		break;
+	case Slope::_48:
+		*leftLowCut.get<0>().coefficients = *lowCutCoefficients[0];
+		*rightLowCut.get<0>().coefficients = *lowCutCoefficients[0];
+		*leftLowCut.get<1>().coefficients = *lowCutCoefficients[1];
+		*rightLowCut.get<1>().coefficients = *lowCutCoefficients[1];
+		*leftLowCut.get<2>().coefficients = *lowCutCoefficients[2];
+		*rightLowCut.get<2>().coefficients = *lowCutCoefficients[2];
+		*leftLowCut.get<3>().coefficients = *lowCutCoefficients[3];
+		*rightLowCut.get<3>().coefficients = *lowCutCoefficients[3];
+		leftLowCut.template setBypassed<0>(false);
+		rightLowCut.template setBypassed<0>(false);
+		leftLowCut.template setBypassed<1>(false);
+		rightLowCut.template setBypassed<1>(false);
+		leftLowCut.template setBypassed<2>(false);
+		rightLowCut.template setBypassed<2>(false);
+		leftLowCut.template setBypassed<3>(false);
+		rightLowCut.template setBypassed<3>(false);
+		break;
+	default:
+		jassertfalse;
+		break;
+	}
+}
+
+void AudioPluginAudioProcessor::updateHighCutFilter(const EQParams &parameters, const double sampleRate)
+{
+	auto highCutCoefficients = juce::dsp::FilterDesign<float>::designIIRLowpassHighOrderButterworthMethod(
+		parameters.highCutFreq, sampleRate, 2 * (parameters.highCutSlope + 1));
+
+	auto &leftHighCut = leftChannelFilter.get<ChainPositions::HighCut>();
+	auto &rightHighCut = rightChannelFilter.get<ChainPositions::HighCut>();
+
+	leftHighCut.setBypassed<0>(true);
+	rightHighCut.setBypassed<0>(true);
+	leftHighCut.setBypassed<1>(true);
+	rightHighCut.setBypassed<1>(true);
+	leftHighCut.setBypassed<2>(true);
+	rightHighCut.setBypassed<2>(true);
+	leftHighCut.setBypassed<3>(true);
+	rightHighCut.setBypassed<3>(true);
+
+	switch (parameters.highCutSlope)
+	{
+	case Slope::_12:
+		*leftHighCut.get<0>().coefficients = *highCutCoefficients[0];
+		*rightHighCut.get<0>().coefficients = *highCutCoefficients[0];
+		leftHighCut.template setBypassed<0>(false);
+		rightHighCut.template setBypassed<0>(false);
+		break;
+	case Slope::_24:
+		*leftHighCut.get<0>().coefficients = *highCutCoefficients[0];
+		*rightHighCut.get<0>().coefficients = *highCutCoefficients[0];
+		*leftHighCut.get<1>().coefficients = *highCutCoefficients[1];
+		*rightHighCut.get<1>().coefficients = *highCutCoefficients[1];
+		leftHighCut.template setBypassed<0>(false);
+		rightHighCut.template setBypassed<0>(false);
+		leftHighCut.template setBypassed<1>(false);
+		rightHighCut.template setBypassed<1>(false);
+		break;
+	case Slope::_36:
+		*leftHighCut.get<0>().coefficients = *highCutCoefficients[0];
+		*rightHighCut.get<0>().coefficients = *highCutCoefficients[0];
+		*leftHighCut.get<1>().coefficients = *highCutCoefficients[1];
+		*rightHighCut.get<1>().coefficients = *highCutCoefficients[1];
+		*leftHighCut.get<2>().coefficients = *highCutCoefficients[2];
+		*rightHighCut.get<2>().coefficients = *highCutCoefficients[2];
+		leftHighCut.template setBypassed<0>(false);
+		rightHighCut.template setBypassed<0>(false);
+		leftHighCut.template setBypassed<1>(false);
+		rightHighCut.template setBypassed<1>(false);
+		leftHighCut.template setBypassed<2>(false);
+		rightHighCut.template setBypassed<2>(false);
+		break;
+	case Slope::_48:
+		*leftHighCut.get<0>().coefficients = *highCutCoefficients[0];
+		*rightHighCut.get<0>().coefficients = *highCutCoefficients[0];
+		*leftHighCut.get<1>().coefficients = *highCutCoefficients[1];
+		*rightHighCut.get<1>().coefficients = *highCutCoefficients[1];
+		*leftHighCut.get<2>().coefficients = *highCutCoefficients[2];
+		*rightHighCut.get<2>().coefficients = *highCutCoefficients[2];
+		*leftHighCut.get<3>().coefficients = *highCutCoefficients[3];
+		*rightHighCut.get<3>().coefficients = *highCutCoefficients[3];
+		leftHighCut.template setBypassed<0>(false);
+		rightHighCut.template setBypassed<0>(false);
+		leftHighCut.template setBypassed<1>(false);
+		rightHighCut.template setBypassed<1>(false);
+		leftHighCut.template setBypassed<2>(false);
+		rightHighCut.template setBypassed<2>(false);
+		leftHighCut.template setBypassed<3>(false);
+		rightHighCut.template setBypassed<3>(false);
+		break;
+	default:
+		jassertfalse;
+		break;
+	}
 }
