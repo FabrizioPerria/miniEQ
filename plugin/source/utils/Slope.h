@@ -1,9 +1,37 @@
 #pragma once
 
-enum Slope
+#include <juce_core/juce_core.h>
+
+class Slope
 {
-	_12,
-	_24,
-	_36,
-	_48
+  public:
+	enum Value
+	{
+		_12,
+		_24,
+		_36,
+		_48
+	};
+
+	static juce::StringArray toArray()
+	{
+		return {"12 db/Oct", "24 db/Oct", "36 db/Oct", "48 db/Oct"};
+	}
+
+	static Slope fromFloat(float f)
+	{
+		return static_cast<Value>(( int ) f);
+	}
+
+	constexpr Slope(Value aType) : value(aType)
+	{
+	}
+
+	constexpr operator Value() const
+	{
+		return value;
+	}
+
+  private:
+	Value value;
 };
