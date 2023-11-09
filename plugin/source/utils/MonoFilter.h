@@ -5,3 +5,10 @@
 using Filter = juce::dsp::IIR::Filter<float>;
 using ChainedFilters = juce::dsp::ProcessorChain<Filter, Filter, Filter, Filter>;
 using MonoFilter = juce::dsp::ProcessorChain<ChainedFilters, Filter, ChainedFilters>;
+
+enum ChainPositions
+{
+	LowCut,
+	Peak,
+	HighCut
+};

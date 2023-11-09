@@ -18,7 +18,6 @@ AudioPluginAudioProcessor::AudioPluginAudioProcessor()
 
 AudioPluginAudioProcessor::~AudioPluginAudioProcessor()
 {
-
 	dsp::Gain<float> g;
 	juce::dsp::Reverb reverb;
 }
@@ -98,6 +97,14 @@ void AudioPluginAudioProcessor::prepareToPlay(double sampleRate, int samplesPerB
 
 	rightChannelFilter.prepare(spec);
 	leftChannelFilter.prepare(spec);
+
+	auto parameters = getEQParams();
+
+	auto peakCoefficients = juce::dsp::IIR::Coefficients<float>::makePeakFilter(
+		sampleRate, parameters.peakFreq, parameters.peakQuality, juce::Decibels::decibelsToGain(parameters.peakGainDb));
+
+	*leftChannelFilter.get<ChainPositions::Peak>().coefficients = *peakCoefficients;
+	*rightChannelFilter.get<ChainPositions::Peak>().coefficients = *peakCoefficients;
 }
 
 void AudioPluginAudioProcessor::releaseResources()
@@ -140,6 +147,15 @@ void AudioPluginAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, j
 
 	for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
 		buffer.clear(i, 0, buffer.getNumSamples());
+
+	auto parameters = getEQParams();
+
+	auto peakCoefficients = juce::dsp::IIR::Coefficients<float>::makePeakFilter(
+		getSampleRate(), parameters.peakFreq, parameters.peakQuality,
+		juce::Decibels::decibelsToGain(parameters.peakGainDb));
+
+	*leftChannelFilter.get<ChainPositions::Peak>().coefficients = *peakCoefficients;
+	*rightChannelFilter.get<ChainPositions::Peak>().coefficients = *peakCoefficients;
 
 	auto block = juce::dsp::AudioBlock<float>(buffer);
 	auto leftBlock = block.getSingleChannelBlock(0);
@@ -197,16 +213,33 @@ juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::c
 	using Range = juce::NormalisableRange<float>;
 
 	params.add(std::make_unique<juce::AudioParameterFloat>(ParameterID{"LOWCUT_FREQUENCY", 1}, "Lowcut Frequency",
-														   Range(20.f, 20000.f, 1.f, 1.f), 20.f));
+														   Range(20.f, 20000.f, 1.f, 0.25f), 20.f));
 	params.add(std::make_unique<juce::AudioParameterFloat>(ParameterID{"HIGHCUT_FREQUENCY", 1}, "Highcut Frequency",
-														   Range(20.f, 20000.f, 1.f, 1.f), 20000.f));
+														   Range(20.f, 20000.f, 1.f, 0.25f), 20000.f));
 	params.add(std::make_unique<juce::AudioParameterFloat>(ParameterID{"PEAK_FREQUENCY", 1}, "Peak Frequency",
-														   Range(20.f, 20000.f, 1.f, 1.f), 750.f));
-	params.add(std::make_unique<juce::AudioParameterFloat>(ParameterID{"PEAK_GAIN", 1}, "Peak Gain", Range(-24.f, 24.f, 0.5f, 1.f), 0.f));
+														   Range(20.f, 20000.f, 1.f, 0.25f), 750.f));
+	params.add(std::make_unique<juce::AudioParameterFloat>(ParameterID{"PEAK_GAIN", 1}, "Peak Gain",
+														   Range(-24.f, 24.f, 0.5f, 1.f), 0.f));
+	params.add(std::make_unique<juce::AudioParameterFloat>(ParameterID{"PEAK_QUALITY", 1}, "Peak Quality",
+														   Range(0.1f, 10.f, 0.05f, 1.f), 1.f));
 	params.add(
-		std::make_unique<juce::AudioParameterFloat>(ParameterID{"PEAK_QUALITY", 1}, "Peak Quality", Range(0.1f, 10.f, 0.05f, 1.f), 1.f));
-	params.add(std::make_unique<juce::AudioParameterChoice>(ParameterID{"LOWCUT_SLOPE", 1}, "Lowcut Slope", slopeValues, 0));
-	params.add(std::make_unique<juce::AudioParameterChoice>(ParameterID{"HIGHCUT_SLOPE", 1}, "Highcut Slope", slopeValues, 0));
+		std::make_unique<juce::AudioParameterChoice>(ParameterID{"LOWCUT_SLOPE", 1}, "Lowcut Slope", slopeValues, 0));
+	params.add(
+		std::make_unique<juce::AudioParameterChoice>(ParameterID{"HIGHCUT_SLOPE", 1}, "Highcut Slope", slopeValues, 0));
 
 	return params;
+}
+
+EQParams AudioPluginAudioProcessor::getEQParams()
+{
+	EQParams p;
+	p.lowCutFreq = apvts.getRawParameterValue("LOWCUT_FREQUENCY")->load();
+	p.highCutFreq = apvts.getRawParameterValue("HIGHCUT_FREQUENCY")->load();
+	p.peakFreq = apvts.getRawParameterValue("PEAK_FREQUENCY")->load();
+	p.peakGainDb = apvts.getRawParameterValue("PEAK_GAIN")->load();
+	p.peakQuality = apvts.getRawParameterValue("PEAK_QUALITY")->load();
+	p.lowCutSlope = ( int ) apvts.getRawParameterValue("LOWCUT_SLOPE")->load();
+	p.highCutSlope = ( int ) apvts.getRawParameterValue("HIGHCUT_SLOPE")->load();
+
+	return p;
 }

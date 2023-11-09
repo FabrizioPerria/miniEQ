@@ -2,6 +2,7 @@
 
 #include <juce_audio_processors/juce_audio_processors.h>
 #include "utils/MonoFilter.h"
+#include "utils/EQParams.h"
 
 //==============================================================================
 class AudioPluginAudioProcessor : public juce::AudioProcessor
@@ -47,6 +48,7 @@ class AudioPluginAudioProcessor : public juce::AudioProcessor
 
   private:
 	juce::AudioProcessorValueTreeState::ParameterLayout createParameters();
+	EQParams getEQParams();
 
 	juce::AudioProcessorValueTreeState apvts{*this, nullptr, "Parameters", createParameters()};
 	MonoFilter rightChannelFilter, leftChannelFilter;
