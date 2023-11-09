@@ -204,13 +204,17 @@ juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::c
 
 	using Range = juce::NormalisableRange<float>;
 
-	params.add(std::make_unique<juce::AudioParameterFloat>("LOWCUT_FREQUENCY", "Lowcut Freq", Range(20.f, 20000.f, 1.f, 1.f), 20.f));
-	params.add(std::make_unique<juce::AudioParameterChoice>("LOWCUT_SLOPE", "Lowcut Slope", slopeValues, 0));
-	params.add(std::make_unique<juce::AudioParameterFloat>("HIGHCUT_FREQUENCY", "Highcut Freq", Range(20.f, 20000.f, 1.f, 1.f), 20000.f));
-	params.add(std::make_unique<juce::AudioParameterChoice>("HIGHCUT_SLOPE", "Highcut Slope", slopeValues, 0));
-	params.add(std::make_unique<juce::AudioParameterFloat>("PEAK_FREQUENCY", "Peak Freq", Range(20.f, 20000.f, 1.f, 1.f), 750.f));
-	params.add(std::make_unique<juce::AudioParameterFloat>("PEAK_GAIN", "Peak Gain", Range(-24.f, 24.f, 0.5f, 1.f), 0.f));
-	params.add(std::make_unique<juce::AudioParameterFloat>("PEAK_QUALITY", "Peak Quality", Range(0.1f, 10.f, 0.05f, 1.f), 1.f));
+	params.add(std::make_unique<juce::AudioParameterFloat>(ParameterID{"LOWCUT_FREQUENCY", 1}, "Lowcut Frequency",
+														   Range(20.f, 20000.f, 1.f, 1.f), 20.f));
+	params.add(std::make_unique<juce::AudioParameterFloat>(ParameterID{"HIGHCUT_FREQUENCY", 1}, "Highcut Frequency",
+														   Range(20.f, 20000.f, 1.f, 1.f), 20000.f));
+	params.add(std::make_unique<juce::AudioParameterFloat>(ParameterID{"PEAK_FREQUENCY", 1}, "Peak Frequency",
+														   Range(20.f, 20000.f, 1.f, 1.f), 750.f));
+	params.add(std::make_unique<juce::AudioParameterFloat>(ParameterID{"PEAK_GAIN", 1}, "Peak Gain", Range(-24.f, 24.f, 0.5f, 1.f), 0.f));
+	params.add(
+		std::make_unique<juce::AudioParameterFloat>(ParameterID{"PEAK_QUALITY", 1}, "Peak Quality", Range(0.1f, 10.f, 0.05f, 1.f), 1.f));
+	params.add(std::make_unique<juce::AudioParameterChoice>(ParameterID{"LOWCUT_SLOPE", 1}, "Lowcut Slope", slopeValues, 0));
+	params.add(std::make_unique<juce::AudioParameterChoice>(ParameterID{"HIGHCUT_SLOPE", 1}, "Highcut Slope", slopeValues, 0));
 
 	return params;
 }
