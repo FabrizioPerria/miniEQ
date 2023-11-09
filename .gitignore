@@ -3,3 +3,4 @@ build/
 libs/
 .cache/
 .DS_Store
+plan.md
