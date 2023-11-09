@@ -1,8 +1,7 @@
 #pragma once
 
-/* #include <JuceHeader.h> */
-/* #include <cmath> */
 #include <juce_audio_processors/juce_audio_processors.h>
+#include "utils/MonoFilter.h"
 
 //==============================================================================
 class AudioPluginAudioProcessor : public juce::AudioProcessor
@@ -50,6 +49,8 @@ class AudioPluginAudioProcessor : public juce::AudioProcessor
 	juce::AudioProcessorValueTreeState::ParameterLayout createParameters();
 
 	juce::AudioProcessorValueTreeState apvts{*this, nullptr, "Parameters", createParameters()};
+	MonoFilter rightChannelFilter, leftChannelFilter;
+
 	//==============================================================================
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioPluginAudioProcessor)
 };
