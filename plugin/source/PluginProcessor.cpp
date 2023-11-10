@@ -80,11 +80,7 @@ void AudioPluginAudioProcessor::prepareToPlay(double sampleRate, int samplesPerB
 	rightChannelFilter.prepare(spec);
 	leftChannelFilter.prepare(spec);
 
-	auto parameters = getEQParams();
-
-	updatePeakFilter(parameters, sampleRate);
-	updateLowCutFilter(parameters, sampleRate);
-	updateHighCutFilter(parameters, sampleRate);
+	updateFilters(sampleRate);
 }
 
 void AudioPluginAudioProcessor::releaseResources()
@@ -128,11 +124,7 @@ void AudioPluginAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, j
 	for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
 		buffer.clear(i, 0, buffer.getNumSamples());
 
-	auto parameters = getEQParams();
-
-	updatePeakFilter(parameters, getSampleRate());
-	updateLowCutFilter(parameters, getSampleRate());
-	updateHighCutFilter(parameters, getSampleRate());
+	updateFilters(getSampleRate());
 
 	auto block = juce::dsp::AudioBlock<float>(buffer);
 	auto leftBlock = block.getSingleChannelBlock(0);
@@ -213,13 +205,25 @@ EQParams AudioPluginAudioProcessor::getEQParams()
 	return p;
 }
 
+void AudioPluginAudioProcessor::updateFilters(const double sampleRate)
+{
+	auto parameters = getEQParams();
+
+	updatePeakFilter(parameters, sampleRate);
+	updateLowCutFilter(parameters, sampleRate);
+	updateHighCutFilter(parameters, sampleRate);
+}
+
 void AudioPluginAudioProcessor::updatePeakFilter(const EQParams& parameters, const double sampleRate)
 {
 	auto peakCoefficients = juce::dsp::IIR::Coefficients<float>::makePeakFilter(sampleRate, parameters.peakFreq, parameters.peakQuality,
 																				juce::Decibels::decibelsToGain(parameters.peakGainDb));
 
-	updateCoefficients(leftChannelFilter.get<ChainPositions::Peak>().coefficients, peakCoefficients);
-	updateCoefficients(rightChannelFilter.get<ChainPositions::Peak>().coefficients, peakCoefficients);
+	auto& leftPeak = leftChannelFilter.get<ChainPositions::Peak>();
+	auto& rightPeak = rightChannelFilter.get<ChainPositions::Peak>();
+
+	updateCoefficients(leftPeak.coefficients, peakCoefficients);
+	updateCoefficients(rightPeak.coefficients, peakCoefficients);
 }
 
 void AudioPluginAudioProcessor::updateLowCutFilter(const EQParams& parameters, const double sampleRate)
@@ -248,27 +252,30 @@ void AudioPluginAudioProcessor::updateHighCutFilter(const EQParams& parameters, 
 
 void AudioPluginAudioProcessor::updateCoefficients(Coefficients& old, const Coefficients& replacements) { *old = *replacements; }
 
-template <typename ChainT, typename CoefficientT>
-void AudioPluginAudioProcessor::updateCutFilter(ChainT& cutChain, const CoefficientT& cutCoefficients, const Slope& slope)
+template <int Index, typename ChainT, typename CoefficientT>
+void AudioPluginAudioProcessor::updateStageFilter(ChainT& filterChain, const CoefficientT& coefficients)
 {
-	cutChain.template setBypassed<0>(true);
-	cutChain.template setBypassed<1>(true);
-	cutChain.template setBypassed<2>(true);
-	cutChain.template setBypassed<3>(true);
+	updateCoefficients(filterChain.template get<Index>().coefficients, coefficients[Index]);
+	filterChain.template setBypassed<Index>(false);
+}
+
+template <typename ChainT, typename CoefficientT>
+void AudioPluginAudioProcessor::updateCutFilter(ChainT& filterChain, const CoefficientT& coefficients, const Slope& slope)
+{
+	filterChain.template setBypassed<0>(true);
+	filterChain.template setBypassed<1>(true);
+	filterChain.template setBypassed<2>(true);
+	filterChain.template setBypassed<3>(true);
 
 	switch (slope) {
 	case Slope::_48:
-		updateCoefficients(cutChain.template get<3>().coefficients, cutCoefficients[3]);
-		cutChain.template setBypassed<3>(false);
+		updateStageFilter<3>(filterChain, coefficients);
 	case Slope::_36:
-		updateCoefficients(cutChain.template get<2>().coefficients, cutCoefficients[2]);
-		cutChain.template setBypassed<2>(false);
+		updateStageFilter<2>(filterChain, coefficients);
 	case Slope::_24:
-		updateCoefficients(cutChain.template get<1>().coefficients, cutCoefficients[1]);
-		cutChain.template setBypassed<1>(false);
+		updateStageFilter<1>(filterChain, coefficients);
 	case Slope::_12:
-		updateCoefficients(cutChain.template get<0>().coefficients, cutCoefficients[0]);
-		cutChain.template setBypassed<0>(false);
+		updateStageFilter<0>(filterChain, coefficients);
 		break;
 	default:
 		jassertfalse;

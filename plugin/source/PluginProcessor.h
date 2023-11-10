@@ -51,9 +51,13 @@ private:
 	void updatePeakFilter(const EQParams& params, const double sampleRate);
 	void updateLowCutFilter(const EQParams& params, const double sampleRate);
 	void updateHighCutFilter(const EQParams& params, const double sampleRate);
+	void updateFilters(double sampleRate);
 
 	juce::AudioProcessorValueTreeState apvts { *this, nullptr, "Parameters", createParameters() };
 	MonoFilter rightChannelFilter, leftChannelFilter;
+
+	template <int Index, typename ChainT, typename CoefficientT>
+	void updateStageFilter(ChainT& filterChain, const CoefficientT& coefficients);
 
 	using Coefficients = Filter::CoefficientsPtr;
 	static void updateCoefficients(Coefficients& old, const Coefficients& replacements);
