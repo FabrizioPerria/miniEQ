@@ -31,6 +31,7 @@ target_sources(${PROJECT_NAME}
     PRIVATE
         source/PluginEditor.cpp
         source/PluginProcessor.cpp
+        source/ui/CustomSlider.cpp
 )
 
 target_include_directories(${PROJECT_NAME}

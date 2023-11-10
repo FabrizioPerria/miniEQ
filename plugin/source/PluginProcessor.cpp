@@ -140,11 +140,7 @@ bool AudioPluginAudioProcessor::hasEditor() const
 	return true; // (change this to false if you choose to not supply an editor)
 }
 
-juce::AudioProcessorEditor* AudioPluginAudioProcessor::createEditor()
-{
-	return new GenericAudioProcessorEditor(*this); // TODO: replace with your editor class
-	/* return new AudioPluginAudioProcessorEditor(*this); */
-}
+juce::AudioProcessorEditor* AudioPluginAudioProcessor::createEditor() { return new AudioPluginAudioProcessorEditor(*this); }
 
 //==============================================================================
 void AudioPluginAudioProcessor::getStateInformation(juce::MemoryBlock& destData)
@@ -171,9 +167,9 @@ juce::AudioProcessorValueTreeState& AudioPluginAudioProcessor::getAPVTS() { retu
 
 juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::createParameters()
 {
-	juce::AudioProcessorValueTreeState::ParameterLayout params;
-
 	using Range = juce::NormalisableRange<float>;
+
+	juce::AudioProcessorValueTreeState::ParameterLayout params;
 
 	params.add(std::make_unique<juce::AudioParameterFloat>(ParameterID { "LOWCUT_FREQUENCY", 1 }, "Lowcut Frequency",
 														   Range(20.f, 20000.f, 1.f, 0.25f), 20.f));
