@@ -46,24 +46,26 @@ public:
 	juce::AudioProcessorValueTreeState& getAPVTS();
 
 private:
+	juce::AudioProcessorValueTreeState apvts { *this, nullptr, "Parameters", createParameters() };
+
+	MonoFilter rightChannelFilter, leftChannelFilter;
+
 	juce::AudioProcessorValueTreeState::ParameterLayout createParameters();
 	EQParams getEQParams();
+
+	void updateFilters(double sampleRate);
 	void updatePeakFilter(const EQParams& params, const double sampleRate);
 	void updateLowCutFilter(const EQParams& params, const double sampleRate);
 	void updateHighCutFilter(const EQParams& params, const double sampleRate);
-	void updateFilters(double sampleRate);
 
-	juce::AudioProcessorValueTreeState apvts { *this, nullptr, "Parameters", createParameters() };
-	MonoFilter rightChannelFilter, leftChannelFilter;
+	template <typename ChainT, typename CoefficientT>
+	void updateCutFilter(ChainT& cutChain, const CoefficientT& cutCoefficients, const Slope& slope);
 
 	template <int Index, typename ChainT, typename CoefficientT>
 	void updateStageFilter(ChainT& filterChain, const CoefficientT& coefficients);
 
 	using Coefficients = Filter::CoefficientsPtr;
 	static void updateCoefficients(Coefficients& old, const Coefficients& replacements);
-
-	template <typename ChainT, typename CoefficientT>
-	void updateCutFilter(ChainT& cutChain, const CoefficientT& cutCoefficients, const Slope& slope);
 
 	//==============================================================================
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioPluginAudioProcessor)

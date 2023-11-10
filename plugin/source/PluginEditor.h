@@ -26,5 +26,7 @@ private:
 	CustomSlider lowCutSlopeSlider;
 	CustomSlider highCutSlopeSlider;
 
+	MonoFilter drawChannel;
+
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioPluginAudioProcessorEditor)
 };
