@@ -1,13 +1,12 @@
 #pragma once
 
-#include <juce_audio_processors/juce_audio_processors.h>
-#include "utils/MonoFilter.h"
 #include "utils/EQParams.h"
+#include "utils/MonoFilter.h"
+#include <juce_audio_processors/juce_audio_processors.h>
 
 //==============================================================================
-class AudioPluginAudioProcessor : public juce::AudioProcessor
-{
-  public:
+class AudioPluginAudioProcessor : public juce::AudioProcessor {
+public:
 	//==============================================================================
 	AudioPluginAudioProcessor();
 	~AudioPluginAudioProcessor() override;
@@ -16,13 +15,13 @@ class AudioPluginAudioProcessor : public juce::AudioProcessor
 	void prepareToPlay(double sampleRate, int samplesPerBlock) override;
 	void releaseResources() override;
 
-	bool isBusesLayoutSupported(const BusesLayout &layouts) const override;
+	bool isBusesLayoutSupported(const BusesLayout& layouts) const override;
 
-	void processBlock(juce::AudioBuffer<float> &, juce::MidiBuffer &) override;
+	void processBlock(juce::AudioBuffer<float>&, juce::MidiBuffer&) override;
 	using AudioProcessor::processBlock;
 
 	//==============================================================================
-	juce::AudioProcessorEditor *createEditor() override;
+	juce::AudioProcessorEditor* createEditor() override;
 	bool hasEditor() const override;
 
 	//==============================================================================
@@ -38,23 +37,29 @@ class AudioPluginAudioProcessor : public juce::AudioProcessor
 	int getCurrentProgram() override;
 	void setCurrentProgram(int index) override;
 	const juce::String getProgramName(int index) override;
-	void changeProgramName(int index, const juce::String &newName) override;
+	void changeProgramName(int index, const juce::String& newName) override;
 
 	//==============================================================================
-	void getStateInformation(juce::MemoryBlock &destData) override;
-	void setStateInformation(const void *data, int sizeInBytes) override;
+	void getStateInformation(juce::MemoryBlock& destData) override;
+	void setStateInformation(const void* data, int sizeInBytes) override;
 
-	juce::AudioProcessorValueTreeState &getAPVTS();
+	juce::AudioProcessorValueTreeState& getAPVTS();
 
-  private:
+private:
 	juce::AudioProcessorValueTreeState::ParameterLayout createParameters();
 	EQParams getEQParams();
-	void updatePeakFilter(const EQParams &params, const double sampleRate);
-	void updateLowCutFilter(const EQParams &params, const double sampleRate);
-	void updateHighCutFilter(const EQParams &params, const double sampleRate);
+	void updatePeakFilter(const EQParams& params, const double sampleRate);
+	void updateLowCutFilter(const EQParams& params, const double sampleRate);
+	void updateHighCutFilter(const EQParams& params, const double sampleRate);
 
-	juce::AudioProcessorValueTreeState apvts{*this, nullptr, "Parameters", createParameters()};
+	juce::AudioProcessorValueTreeState apvts { *this, nullptr, "Parameters", createParameters() };
 	MonoFilter rightChannelFilter, leftChannelFilter;
+
+	using Coefficients = Filter::CoefficientsPtr;
+	static void updateCoefficients(Coefficients& old, const Coefficients& replacements);
+
+	template <typename ChainT, typename CoefficientT>
+	void updateCutFilter(ChainT& cutChain, const CoefficientT& cutCoefficients, const Slope& slope);
 
 	//==============================================================================
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioPluginAudioProcessor)
