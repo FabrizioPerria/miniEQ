@@ -1,7 +1,7 @@
 #pragma once
 
-#include "utils/EQParams.h"
-#include "utils/MonoFilter.h"
+#include "data/EQParams.h"
+#include "data/MonoFilter.h"
 #include <juce_audio_processors/juce_audio_processors.h>
 
 //==============================================================================
@@ -52,20 +52,6 @@ class AudioPluginAudioProcessor : public juce::AudioProcessor
 	MonoFilter rightChannelFilter, leftChannelFilter;
 
 	juce::AudioProcessorValueTreeState::ParameterLayout createParameters();
-
-	void updateFilters(double sampleRate);
-	void updatePeakFilter(const EQParams &params, const double sampleRate);
-	void updateLowCutFilter(const EQParams &params, const double sampleRate);
-	void updateHighCutFilter(const EQParams &params, const double sampleRate);
-
-	template <typename ChainT, typename CoefficientT>
-	void updateCutFilter(ChainT &cutChain, const CoefficientT &cutCoefficients, const Slope &slope);
-
-	template <int Index, typename ChainT, typename CoefficientT>
-	void updateStageFilter(ChainT &filterChain, const CoefficientT &coefficients);
-
-	using Coefficients = Filter::CoefficientsPtr;
-	static void updateCoefficients(Coefficients &old, const Coefficients &replacements);
 
 	//==============================================================================
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioPluginAudioProcessor)

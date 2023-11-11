@@ -3,16 +3,11 @@
 #include <JuceHeader.h>
 
 //==============================================================================
-AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor(AudioPluginAudioProcessor& p)
-	: AudioProcessorEditor(&p)
-	, processorRef(p)
-	, peakFreqSlider(p.getAPVTS(), "PEAK_FREQUENCY")
-	, peakGainSlider(p.getAPVTS(), "PEAK_GAIN")
-	, peakQualitySlider(p.getAPVTS(), "PEAK_QUALITY")
-	, lowCutFreqSlider(p.getAPVTS(), "LOWCUT_FREQUENCY")
-	, highCutFreqSlider(p.getAPVTS(), "HIGHCUT_FREQUENCY")
-	, lowCutSlopeSlider(p.getAPVTS(), "LOWCUT_SLOPE")
-	, highCutSlopeSlider(p.getAPVTS(), "HIGHCUT_SLOPE")
+AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor(AudioPluginAudioProcessor &p)
+	: AudioProcessorEditor(&p), processorRef(p), peakFreqSlider(p.getAPVTS(), "PEAK_FREQUENCY"), peakGainSlider(p.getAPVTS(), "PEAK_GAIN"),
+	  peakQualitySlider(p.getAPVTS(), "PEAK_QUALITY"), lowCutFreqSlider(p.getAPVTS(), "LOWCUT_FREQUENCY"),
+	  highCutFreqSlider(p.getAPVTS(), "HIGHCUT_FREQUENCY"), lowCutSlopeSlider(p.getAPVTS(), "LOWCUT_SLOPE"),
+	  highCutSlopeSlider(p.getAPVTS(), "HIGHCUT_SLOPE")
 {
 	addAndMakeVisible(peakFreqSlider);
 	addAndMakeVisible(peakGainSlider);
@@ -25,10 +20,12 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor(AudioPluginAudi
 	setSize(600, 400);
 }
 
-AudioPluginAudioProcessorEditor::~AudioPluginAudioProcessorEditor() { }
+AudioPluginAudioProcessorEditor::~AudioPluginAudioProcessorEditor()
+{
+}
 
 //==============================================================================
-void AudioPluginAudioProcessorEditor::paint(juce::Graphics& g)
+void AudioPluginAudioProcessorEditor::paint(juce::Graphics &g)
 {
 	// (Our component is opaque, so we must completely fill the background with a solid colour)
 	g.fillAll(getLookAndFeel().findColour(juce::ResizableWindow::backgroundColourId));
@@ -40,16 +37,17 @@ void AudioPluginAudioProcessorEditor::paint(juce::Graphics& g)
 	g.setColour(JUCE_LIVE_CONSTANT(juce::Colours::black));
 	g.fillRect(drawResponseArea);
 
-	auto& lowCut = drawChannel.get<ChainPositions::LowCut>();
-	auto& peak = drawChannel.get<ChainPositions::Peak>();
-	auto& highCut = drawChannel.get<ChainPositions::HighCut>();
+	auto &lowCut = drawChannel.get<ChainPositions::LowCut>();
+	auto &peak = drawChannel.get<ChainPositions::Peak>();
+	auto &highCut = drawChannel.get<ChainPositions::HighCut>();
 
 	auto sampleRate = processorRef.getSampleRate();
 
 	std::vector<double> mags;
 	mags.resize((size_t)w);
 
-	for (int i = 0; i < w; ++i) {
+	for (int i = 0; i < w; ++i)
+	{
 		double mag = 1.f;
 		auto freq = mapToLog10((double)i / (double)w, 20.0, 20000.0);
 		if (!drawChannel.isBypassed<ChainPositions::Peak>())
@@ -81,16 +79,18 @@ void AudioPluginAudioProcessorEditor::paint(juce::Graphics& g)
 
 	g.setColour(juce::Colours::cyan);
 	g.setOpacity(0.5f);
+	g.setFont(10.0f);
 
-	std::vector<float> freqs { 20.0f, 50.0f, 100.0f, 200.0f, 500.0f, 1000.0f, 2000.0f, 5000.0f, 10000.0f };
-	for (auto freq : freqs) {
+	std::vector<float> freqs {20.0f, 50.0f, 100.0f, 200.0f, 500.0f, 1000.0f, 2000.0f, 5000.0f, 10000.0f};
+	for (auto freq : freqs)
+	{
 		float x = (float)w * juce::mapFromLog10(freq, 20.0f, 20000.0f);
 		g.drawLine(x, 0, x, (float)h);
-
 		g.drawText(juce::String(freq) + " Hz", (int)x, 0, 50, 20, juce::Justification::centred, false);
 	}
 
-	for (int i = 1; i < 4; ++i) {
+	for (int i = 1; i < 4; ++i)
+	{
 		float y = (float)(i * h) / 4.0f;
 		g.drawLine(0, y, (float)w, y);
 		g.drawText(juce::String((i - 2) * 12) + " dB", 0, (int)y, 50, 20, juce::Justification::centred, false);
@@ -103,7 +103,8 @@ void AudioPluginAudioProcessorEditor::paint(juce::Graphics& g)
 
 	responseCurve.startNewSubPath((float)drawResponseArea.getX(), (float)map(mags.front()));
 
-	for (int i = 1; i < w; ++i) {
+	for (int i = 1; i < w; ++i)
+	{
 		responseCurve.lineTo((float)(drawResponseArea.getX() + i), (float)map(mags[(size_t)i]));
 	}
 
@@ -139,4 +140,25 @@ void AudioPluginAudioProcessorEditor::resized()
 	fbMain.items.add(juce::FlexItem(fbHighcut).withFlex(1.0f));
 
 	fbMain.performLayout(slidersArea);
+}
+
+void AudioPluginAudioProcessorEditor::timerCallback()
+{
+	if (parametersChanged.compareAndSetBool(false, true))
+	{
+		// update
+
+		repaint();
+	}
+}
+
+void AudioPluginAudioProcessorEditor::parameterValueChanged(int parameterIndex, float newValue)
+{
+	juce::ignoreUnused(parameterIndex, newValue);
+	parametersChanged.set(true);
+}
+
+void AudioPluginAudioProcessorEditor::parameterGestureChanged(int parameterIndex, bool gestureIsStarting)
+{
+	juce::ignoreUnused(parameterIndex, gestureIsStarting);
 }

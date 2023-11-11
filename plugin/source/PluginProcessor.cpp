@@ -1,6 +1,6 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
-#include "utils/EQParams.h"
+#include "data/EQParams.h"
 #include <JuceHeader.h>
 #include <tracer.hpp>
 
@@ -98,7 +98,8 @@ void AudioPluginAudioProcessor::prepareToPlay(double sampleRate, int samplesPerB
 	rightChannelFilter.prepare(spec);
 	leftChannelFilter.prepare(spec);
 
-	updateFilters(sampleRate);
+	updateFilters(apvts, leftChannelFilter, sampleRate);
+	updateFilters(apvts, rightChannelFilter, sampleRate);
 }
 
 void AudioPluginAudioProcessor::releaseResources()
@@ -142,7 +143,8 @@ void AudioPluginAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, j
 	for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
 		buffer.clear(i, 0, buffer.getNumSamples());
 
-	updateFilters(getSampleRate());
+	updateFilters(apvts, leftChannelFilter, getSampleRate());
+	updateFilters(apvts, rightChannelFilter, getSampleRate());
 
 	auto block = juce::dsp::AudioBlock<float>(buffer);
 	auto leftBlock = block.getSingleChannelBlock(0);
@@ -177,7 +179,8 @@ void AudioPluginAudioProcessor::setStateInformation(const void *data, int sizeIn
 	if (tree.isValid())
 	{
 		apvts.replaceState(tree);
-		updateFilters(getSampleRate());
+		updateFilters(apvts, leftChannelFilter, getSampleRate());
+		updateFilters(apvts, rightChannelFilter, getSampleRate());
 	}
 }
 
@@ -199,101 +202,20 @@ juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::c
 
 	juce::AudioProcessorValueTreeState::ParameterLayout params;
 
-	params.add(std::make_unique<juce::AudioParameterFloat>(ParameterID {EQParams::LOWCUT_FREQUENCY, 1}, "Lowcut Frequency",
-														   Range(20.f, 20000.f, 1.f, 0.25f), 20.f));
-	params.add(std::make_unique<juce::AudioParameterFloat>(ParameterID {EQParams::HIGHCUT_FREQUENCY, 1}, "Highcut Frequency",
-														   Range(20.f, 20000.f, 1.f, 0.25f), 20000.f));
-	params.add(std::make_unique<juce::AudioParameterFloat>(ParameterID {EQParams::PEAK_FREQUENCY, 1}, "Peak Frequency",
+	params.add(std::make_unique<juce::AudioParameterFloat>(ParameterID {EQParams::toParamId(EQParams::LOWCUT_FREQUENCY), 1},
+														   "Lowcut Frequency", Range(20.f, 20000.f, 1.f, 0.25f), 20.f));
+	params.add(std::make_unique<juce::AudioParameterFloat>(ParameterID {EQParams::toParamId(EQParams::HIGHCUT_FREQUENCY), 1},
+														   "Highcut Frequency", Range(20.f, 20000.f, 1.f, 0.25f), 20000.f));
+	params.add(std::make_unique<juce::AudioParameterFloat>(ParameterID {EQParams::toParamId(EQParams::PEAK_FREQUENCY), 1}, "Peak Frequency",
 														   Range(20.f, 20000.f, 1.f, 0.25f), 750.f));
-	params.add(
-		std::make_unique<juce::AudioParameterFloat>(ParameterID {EQParams::PEAK_GAIN, 1}, "Peak Gain", Range(-24.f, 24.f, 0.5f, 1.f), 0.f));
-	params.add(std::make_unique<juce::AudioParameterFloat>(ParameterID {EQParams::PEAK_QUALITY, 1}, "Peak Quality",
+	params.add(std::make_unique<juce::AudioParameterFloat>(ParameterID {EQParams::toParamId(EQParams::PEAK_GAIN), 1}, "Peak Gain",
+														   Range(-24.f, 24.f, 0.5f, 1.f), 0.f));
+	params.add(std::make_unique<juce::AudioParameterFloat>(ParameterID {EQParams::toParamId(EQParams::PEAK_QUALITY), 1}, "Peak Quality",
 														   Range(0.1f, 10.f, 0.05f, 1.f), 1.f));
-	params.add(std::make_unique<juce::AudioParameterChoice>(ParameterID {EQParams::LOWCUT_SLOPE, 1}, "Lowcut Slope", Slope::toArray(), 0));
-	params.add(
-		std::make_unique<juce::AudioParameterChoice>(ParameterID {EQParams::HIGHCUT_SLOPE, 1}, "Highcut Slope", Slope::toArray(), 0));
+	params.add(std::make_unique<juce::AudioParameterChoice>(ParameterID {EQParams::toParamId(EQParams::LOWCUT_SLOPE), 1}, "Lowcut Slope",
+															Slope::toArray(), 0));
+	params.add(std::make_unique<juce::AudioParameterChoice>(ParameterID {EQParams::toParamId(EQParams::HIGHCUT_SLOPE), 1}, "Highcut Slope",
+															Slope::toArray(), 0));
 
 	return params;
-}
-
-void AudioPluginAudioProcessor::updateFilters(const double sampleRate)
-{
-	auto parameters = EQParams::getEQParams(apvts);
-
-	updatePeakFilter(parameters, sampleRate);
-	updateLowCutFilter(parameters, sampleRate);
-	updateHighCutFilter(parameters, sampleRate);
-}
-
-void AudioPluginAudioProcessor::updatePeakFilter(const EQParams &parameters, const double sampleRate)
-{
-	auto peakCoefficients = juce::dsp::IIR::Coefficients<float>::makePeakFilter(sampleRate, parameters.peakFreq, parameters.peakQuality,
-																				juce::Decibels::decibelsToGain(parameters.peakGainDb));
-
-	auto &leftPeak = leftChannelFilter.get<ChainPositions::Peak>();
-	auto &rightPeak = rightChannelFilter.get<ChainPositions::Peak>();
-
-	updateCoefficients(leftPeak.coefficients, peakCoefficients);
-	updateCoefficients(rightPeak.coefficients, peakCoefficients);
-}
-
-void AudioPluginAudioProcessor::updateLowCutFilter(const EQParams &parameters, const double sampleRate)
-{
-	auto lowCutCoefficients = juce::dsp::FilterDesign<float>::designIIRHighpassHighOrderButterworthMethod(parameters.lowCutFreq, sampleRate,
-																										  2 * (parameters.lowCutSlope + 1));
-
-	auto &leftLowCut = leftChannelFilter.get<ChainPositions::LowCut>();
-	auto &rightLowCut = rightChannelFilter.get<ChainPositions::LowCut>();
-
-	updateCutFilter(leftLowCut, lowCutCoefficients, parameters.lowCutSlope);
-	updateCutFilter(rightLowCut, lowCutCoefficients, parameters.lowCutSlope);
-}
-
-void AudioPluginAudioProcessor::updateHighCutFilter(const EQParams &parameters, const double sampleRate)
-{
-	auto highCutCoefficients = juce::dsp::FilterDesign<float>::designIIRLowpassHighOrderButterworthMethod(
-		parameters.highCutFreq, sampleRate, 2 * (parameters.highCutSlope + 1));
-
-	auto &leftHighCut = leftChannelFilter.get<ChainPositions::HighCut>();
-	auto &rightHighCut = rightChannelFilter.get<ChainPositions::HighCut>();
-
-	updateCutFilter(leftHighCut, highCutCoefficients, parameters.highCutSlope);
-	updateCutFilter(rightHighCut, highCutCoefficients, parameters.highCutSlope);
-}
-
-void AudioPluginAudioProcessor::updateCoefficients(Coefficients &old, const Coefficients &replacements)
-{
-	*old = *replacements;
-}
-
-template <int Index, typename ChainT, typename CoefficientT>
-void AudioPluginAudioProcessor::updateStageFilter(ChainT &filterChain, const CoefficientT &coefficients)
-{
-	updateCoefficients(filterChain.template get<Index>().coefficients, coefficients[Index]);
-	filterChain.template setBypassed<Index>(false);
-}
-
-template <typename ChainT, typename CoefficientT>
-void AudioPluginAudioProcessor::updateCutFilter(ChainT &filterChain, const CoefficientT &coefficients, const Slope &slope)
-{
-	filterChain.template setBypassed<0>(true);
-	filterChain.template setBypassed<1>(true);
-	filterChain.template setBypassed<2>(true);
-	filterChain.template setBypassed<3>(true);
-
-	switch (slope)
-	{
-	case Slope::_48:
-		updateStageFilter<3>(filterChain, coefficients);
-	case Slope::_36:
-		updateStageFilter<2>(filterChain, coefficients);
-	case Slope::_24:
-		updateStageFilter<1>(filterChain, coefficients);
-	case Slope::_12:
-		updateStageFilter<0>(filterChain, coefficients);
-		break;
-	default:
-		jassertfalse;
-		break;
-	}
 }
