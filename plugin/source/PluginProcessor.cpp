@@ -1,5 +1,6 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
+#include "utils/EQParams.h"
 #include <JuceHeader.h>
 #include <tracer.hpp>
 
@@ -12,14 +13,19 @@ AudioPluginAudioProcessor::AudioPluginAudioProcessor()
 #endif
 						 .withOutput("Output", juce::AudioChannelSet::stereo(), true)
 #endif
-	)
+	  )
 {
 }
 
-AudioPluginAudioProcessor::~AudioPluginAudioProcessor() { }
+AudioPluginAudioProcessor::~AudioPluginAudioProcessor()
+{
+}
 
 //==============================================================================
-const juce::String AudioPluginAudioProcessor::getName() const { return JucePlugin_Name; }
+const juce::String AudioPluginAudioProcessor::getName() const
+{
+	return JucePlugin_Name;
+}
 
 bool AudioPluginAudioProcessor::acceptsMidi() const
 {
@@ -48,7 +54,10 @@ bool AudioPluginAudioProcessor::isMidiEffect() const
 #endif
 }
 
-double AudioPluginAudioProcessor::getTailLengthSeconds() const { return 0.0; }
+double AudioPluginAudioProcessor::getTailLengthSeconds() const
+{
+	return 0.0;
+}
 
 int AudioPluginAudioProcessor::getNumPrograms()
 {
@@ -57,9 +66,15 @@ int AudioPluginAudioProcessor::getNumPrograms()
 			  // really implementing programs.
 }
 
-int AudioPluginAudioProcessor::getCurrentProgram() { return 0; }
+int AudioPluginAudioProcessor::getCurrentProgram()
+{
+	return 0;
+}
 
-void AudioPluginAudioProcessor::setCurrentProgram(int index) { juce::ignoreUnused(index); }
+void AudioPluginAudioProcessor::setCurrentProgram(int index)
+{
+	juce::ignoreUnused(index);
+}
 
 const juce::String AudioPluginAudioProcessor::getProgramName(int index)
 {
@@ -67,7 +82,10 @@ const juce::String AudioPluginAudioProcessor::getProgramName(int index)
 	return {};
 }
 
-void AudioPluginAudioProcessor::changeProgramName(int index, const juce::String& newName) { juce::ignoreUnused(index, newName); }
+void AudioPluginAudioProcessor::changeProgramName(int index, const juce::String &newName)
+{
+	juce::ignoreUnused(index, newName);
+}
 
 //==============================================================================
 void AudioPluginAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
@@ -89,7 +107,7 @@ void AudioPluginAudioProcessor::releaseResources()
 	// spare memory, etc.
 }
 
-bool AudioPluginAudioProcessor::isBusesLayoutSupported(const BusesLayout& layouts) const
+bool AudioPluginAudioProcessor::isBusesLayoutSupported(const BusesLayout &layouts) const
 {
 #if JucePlugin_IsMidiEffect
 	juce::ignoreUnused(layouts);
@@ -99,11 +117,11 @@ bool AudioPluginAudioProcessor::isBusesLayoutSupported(const BusesLayout& layout
 	// In this template code we only support mono or stereo.
 	// Some plugin hosts, such as certain GarageBand versions, will only
 	// load plugins that support stereo bus layouts.
-	if (layouts.getMainOutputChannelSet() != juce::AudioChannelSet::mono()
-		&& layouts.getMainOutputChannelSet() != juce::AudioChannelSet::stereo())
+	if (layouts.getMainOutputChannelSet() != juce::AudioChannelSet::mono() &&
+		layouts.getMainOutputChannelSet() != juce::AudioChannelSet::stereo())
 		return false;
 
-		// This checks if the input layout matches the output layout
+// This checks if the input layout matches the output layout
 #if !JucePlugin_IsSynth
 	if (layouts.getMainOutputChannelSet() != layouts.getMainInputChannelSet())
 		return false;
@@ -113,7 +131,7 @@ bool AudioPluginAudioProcessor::isBusesLayoutSupported(const BusesLayout& layout
 #endif
 }
 
-void AudioPluginAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
+void AudioPluginAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::MidiBuffer &midiMessages)
 {
 	juce::ignoreUnused(midiMessages);
 
@@ -140,20 +158,24 @@ bool AudioPluginAudioProcessor::hasEditor() const
 	return true; // (change this to false if you choose to not supply an editor)
 }
 
-juce::AudioProcessorEditor* AudioPluginAudioProcessor::createEditor() { return new AudioPluginAudioProcessorEditor(*this); }
+juce::AudioProcessorEditor *AudioPluginAudioProcessor::createEditor()
+{
+	return new AudioPluginAudioProcessorEditor(*this);
+}
 
 //==============================================================================
-void AudioPluginAudioProcessor::getStateInformation(juce::MemoryBlock& destData)
+void AudioPluginAudioProcessor::getStateInformation(juce::MemoryBlock &destData)
 {
 	juce::MemoryOutputStream mos(destData, true);
 	apvts.state.writeToStream(mos);
 }
 
-void AudioPluginAudioProcessor::setStateInformation(const void* data, int sizeInBytes)
+void AudioPluginAudioProcessor::setStateInformation(const void *data, int sizeInBytes)
 {
 	auto tree = juce::ValueTree::readFromData(data, (size_t)sizeInBytes);
 
-	if (tree.isValid()) {
+	if (tree.isValid())
+	{
 		apvts.replaceState(tree);
 		updateFilters(getSampleRate());
 	}
@@ -161,9 +183,15 @@ void AudioPluginAudioProcessor::setStateInformation(const void* data, int sizeIn
 
 //==============================================================================
 // This creates new instances of the plugin..
-juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter() { return new AudioPluginAudioProcessor(); }
+juce::AudioProcessor *JUCE_CALLTYPE createPluginFilter()
+{
+	return new AudioPluginAudioProcessor();
+}
 
-juce::AudioProcessorValueTreeState& AudioPluginAudioProcessor::getAPVTS() { return apvts; }
+juce::AudioProcessorValueTreeState &AudioPluginAudioProcessor::getAPVTS()
+{
+	return apvts;
+}
 
 juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::createParameters()
 {
@@ -171,99 +199,90 @@ juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::c
 
 	juce::AudioProcessorValueTreeState::ParameterLayout params;
 
-	params.add(std::make_unique<juce::AudioParameterFloat>(ParameterID { "LOWCUT_FREQUENCY", 1 }, "Lowcut Frequency",
+	params.add(std::make_unique<juce::AudioParameterFloat>(ParameterID {EQParams::LOWCUT_FREQUENCY, 1}, "Lowcut Frequency",
 														   Range(20.f, 20000.f, 1.f, 0.25f), 20.f));
-	params.add(std::make_unique<juce::AudioParameterFloat>(ParameterID { "HIGHCUT_FREQUENCY", 1 }, "Highcut Frequency",
+	params.add(std::make_unique<juce::AudioParameterFloat>(ParameterID {EQParams::HIGHCUT_FREQUENCY, 1}, "Highcut Frequency",
 														   Range(20.f, 20000.f, 1.f, 0.25f), 20000.f));
-	params.add(std::make_unique<juce::AudioParameterFloat>(ParameterID { "PEAK_FREQUENCY", 1 }, "Peak Frequency",
+	params.add(std::make_unique<juce::AudioParameterFloat>(ParameterID {EQParams::PEAK_FREQUENCY, 1}, "Peak Frequency",
 														   Range(20.f, 20000.f, 1.f, 0.25f), 750.f));
 	params.add(
-		std::make_unique<juce::AudioParameterFloat>(ParameterID { "PEAK_GAIN", 1 }, "Peak Gain", Range(-24.f, 24.f, 0.5f, 1.f), 0.f));
+		std::make_unique<juce::AudioParameterFloat>(ParameterID {EQParams::PEAK_GAIN, 1}, "Peak Gain", Range(-24.f, 24.f, 0.5f, 1.f), 0.f));
+	params.add(std::make_unique<juce::AudioParameterFloat>(ParameterID {EQParams::PEAK_QUALITY, 1}, "Peak Quality",
+														   Range(0.1f, 10.f, 0.05f, 1.f), 1.f));
+	params.add(std::make_unique<juce::AudioParameterChoice>(ParameterID {EQParams::LOWCUT_SLOPE, 1}, "Lowcut Slope", Slope::toArray(), 0));
 	params.add(
-		std::make_unique<juce::AudioParameterFloat>(ParameterID { "PEAK_QUALITY", 1 }, "Peak Quality", Range(0.1f, 10.f, 0.05f, 1.f), 1.f));
-	params.add(std::make_unique<juce::AudioParameterChoice>(ParameterID { "LOWCUT_SLOPE", 1 }, "Lowcut Slope", Slope::toArray(), 0));
-	params.add(std::make_unique<juce::AudioParameterChoice>(ParameterID { "HIGHCUT_SLOPE", 1 }, "Highcut Slope", Slope::toArray(), 0));
+		std::make_unique<juce::AudioParameterChoice>(ParameterID {EQParams::HIGHCUT_SLOPE, 1}, "Highcut Slope", Slope::toArray(), 0));
 
 	return params;
 }
 
-EQParams AudioPluginAudioProcessor::getEQParams()
-{
-	EQParams p;
-	p.lowCutFreq = apvts.getRawParameterValue("LOWCUT_FREQUENCY")->load();
-	p.highCutFreq = apvts.getRawParameterValue("HIGHCUT_FREQUENCY")->load();
-	p.peakFreq = apvts.getRawParameterValue("PEAK_FREQUENCY")->load();
-	p.peakGainDb = apvts.getRawParameterValue("PEAK_GAIN")->load();
-	p.peakQuality = apvts.getRawParameterValue("PEAK_QUALITY")->load();
-	p.lowCutSlope = Slope::fromFloat(apvts.getRawParameterValue("LOWCUT_SLOPE")->load());
-	p.highCutSlope = Slope::fromFloat(apvts.getRawParameterValue("HIGHCUT_SLOPE")->load());
-
-	return p;
-}
-
 void AudioPluginAudioProcessor::updateFilters(const double sampleRate)
 {
-	auto parameters = getEQParams();
+	auto parameters = EQParams::getEQParams(apvts);
 
 	updatePeakFilter(parameters, sampleRate);
 	updateLowCutFilter(parameters, sampleRate);
 	updateHighCutFilter(parameters, sampleRate);
 }
 
-void AudioPluginAudioProcessor::updatePeakFilter(const EQParams& parameters, const double sampleRate)
+void AudioPluginAudioProcessor::updatePeakFilter(const EQParams &parameters, const double sampleRate)
 {
 	auto peakCoefficients = juce::dsp::IIR::Coefficients<float>::makePeakFilter(sampleRate, parameters.peakFreq, parameters.peakQuality,
 																				juce::Decibels::decibelsToGain(parameters.peakGainDb));
 
-	auto& leftPeak = leftChannelFilter.get<ChainPositions::Peak>();
-	auto& rightPeak = rightChannelFilter.get<ChainPositions::Peak>();
+	auto &leftPeak = leftChannelFilter.get<ChainPositions::Peak>();
+	auto &rightPeak = rightChannelFilter.get<ChainPositions::Peak>();
 
 	updateCoefficients(leftPeak.coefficients, peakCoefficients);
 	updateCoefficients(rightPeak.coefficients, peakCoefficients);
 }
 
-void AudioPluginAudioProcessor::updateLowCutFilter(const EQParams& parameters, const double sampleRate)
+void AudioPluginAudioProcessor::updateLowCutFilter(const EQParams &parameters, const double sampleRate)
 {
 	auto lowCutCoefficients = juce::dsp::FilterDesign<float>::designIIRHighpassHighOrderButterworthMethod(parameters.lowCutFreq, sampleRate,
 																										  2 * (parameters.lowCutSlope + 1));
 
-	auto& leftLowCut = leftChannelFilter.get<ChainPositions::LowCut>();
-	auto& rightLowCut = rightChannelFilter.get<ChainPositions::LowCut>();
+	auto &leftLowCut = leftChannelFilter.get<ChainPositions::LowCut>();
+	auto &rightLowCut = rightChannelFilter.get<ChainPositions::LowCut>();
 
 	updateCutFilter(leftLowCut, lowCutCoefficients, parameters.lowCutSlope);
 	updateCutFilter(rightLowCut, lowCutCoefficients, parameters.lowCutSlope);
 }
 
-void AudioPluginAudioProcessor::updateHighCutFilter(const EQParams& parameters, const double sampleRate)
+void AudioPluginAudioProcessor::updateHighCutFilter(const EQParams &parameters, const double sampleRate)
 {
 	auto highCutCoefficients = juce::dsp::FilterDesign<float>::designIIRLowpassHighOrderButterworthMethod(
 		parameters.highCutFreq, sampleRate, 2 * (parameters.highCutSlope + 1));
 
-	auto& leftHighCut = leftChannelFilter.get<ChainPositions::HighCut>();
-	auto& rightHighCut = rightChannelFilter.get<ChainPositions::HighCut>();
+	auto &leftHighCut = leftChannelFilter.get<ChainPositions::HighCut>();
+	auto &rightHighCut = rightChannelFilter.get<ChainPositions::HighCut>();
 
 	updateCutFilter(leftHighCut, highCutCoefficients, parameters.highCutSlope);
 	updateCutFilter(rightHighCut, highCutCoefficients, parameters.highCutSlope);
 }
 
-void AudioPluginAudioProcessor::updateCoefficients(Coefficients& old, const Coefficients& replacements) { *old = *replacements; }
+void AudioPluginAudioProcessor::updateCoefficients(Coefficients &old, const Coefficients &replacements)
+{
+	*old = *replacements;
+}
 
 template <int Index, typename ChainT, typename CoefficientT>
-void AudioPluginAudioProcessor::updateStageFilter(ChainT& filterChain, const CoefficientT& coefficients)
+void AudioPluginAudioProcessor::updateStageFilter(ChainT &filterChain, const CoefficientT &coefficients)
 {
 	updateCoefficients(filterChain.template get<Index>().coefficients, coefficients[Index]);
 	filterChain.template setBypassed<Index>(false);
 }
 
 template <typename ChainT, typename CoefficientT>
-void AudioPluginAudioProcessor::updateCutFilter(ChainT& filterChain, const CoefficientT& coefficients, const Slope& slope)
+void AudioPluginAudioProcessor::updateCutFilter(ChainT &filterChain, const CoefficientT &coefficients, const Slope &slope)
 {
 	filterChain.template setBypassed<0>(true);
 	filterChain.template setBypassed<1>(true);
 	filterChain.template setBypassed<2>(true);
 	filterChain.template setBypassed<3>(true);
 
-	switch (slope) {
+	switch (slope)
+	{
 	case Slope::_48:
 		updateStageFilter<3>(filterChain, coefficients);
 	case Slope::_36:
