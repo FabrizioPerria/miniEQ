@@ -32,6 +32,7 @@ target_sources(${PROJECT_NAME}
         source/PluginEditor.cpp
         source/PluginProcessor.cpp
         source/ui/CustomSlider.cpp
+        source/ui/ResponseCurveComponent.cpp
         source/data/MonoFilter.cpp
         source/data/EQParams.cpp
 )
