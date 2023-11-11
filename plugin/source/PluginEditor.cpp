@@ -1,5 +1,6 @@
 #include "PluginEditor.h"
 #include "PluginProcessor.h"
+#include "data/MonoFilter.h"
 #include <JuceHeader.h>
 
 //==============================================================================
@@ -17,11 +18,21 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor(AudioPluginAudi
 	addAndMakeVisible(lowCutSlopeSlider);
 	addAndMakeVisible(highCutSlopeSlider);
 
+	for (auto param : processorRef.getParameters())
+	{
+		param->addListener(this);
+	}
+
+	startTimerHz(60);
 	setSize(600, 400);
 }
 
 AudioPluginAudioProcessorEditor::~AudioPluginAudioProcessorEditor()
 {
+	for (auto param : processorRef.getParameters())
+	{
+		param->removeListener(this);
+	}
 }
 
 //==============================================================================
@@ -146,8 +157,7 @@ void AudioPluginAudioProcessorEditor::timerCallback()
 {
 	if (parametersChanged.compareAndSetBool(false, true))
 	{
-		// update
-
+		updateFilters(processorRef.getAPVTS(), drawChannel, processorRef.getSampleRate());
 		repaint();
 	}
 }
