@@ -24,4 +24,6 @@ class ResponseCurveComponent : public juce::Component, public juce::AudioProcess
 	juce::Atomic<bool> parametersChanged {false};
 	MonoFilter drawChannel;
 	AudioPluginAudioProcessor &p;
+
+	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ResponseCurveComponent)
 };

@@ -1,14 +1,14 @@
 #include "PluginEditor.h"
 #include "PluginProcessor.h"
-#include "data/MonoFilter.h"
+#include "ui/ResponseCurveComponent.h"
 #include <JuceHeader.h>
 
 //==============================================================================
 AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor(AudioPluginAudioProcessor &p)
-	: AudioProcessorEditor(&p), processorRef(p), peakFreqSlider(p.getAPVTS(), "PEAK_FREQUENCY"), peakGainSlider(p.getAPVTS(), "PEAK_GAIN"),
-	  peakQualitySlider(p.getAPVTS(), "PEAK_QUALITY"), lowCutFreqSlider(p.getAPVTS(), "LOWCUT_FREQUENCY"),
-	  highCutFreqSlider(p.getAPVTS(), "HIGHCUT_FREQUENCY"), lowCutSlopeSlider(p.getAPVTS(), "LOWCUT_SLOPE"),
-	  highCutSlopeSlider(p.getAPVTS(), "HIGHCUT_SLOPE"), responseCurveComponent(p)
+	: AudioProcessorEditor(&p), processorRef(p), responseCurveComponent(p), peakFreqSlider(p.getAPVTS(), "PEAK_FREQUENCY", "Hz"),
+	  peakGainSlider(p.getAPVTS(), "PEAK_GAIN", ""), peakQualitySlider(p.getAPVTS(), "PEAK_QUALITY", ""),
+	  lowCutFreqSlider(p.getAPVTS(), "LOWCUT_FREQUENCY", "Hz"), highCutFreqSlider(p.getAPVTS(), "HIGHCUT_FREQUENCY", "Hz"),
+	  lowCutSlopeSlider(p.getAPVTS(), "LOWCUT_SLOPE", "db/Oct"), highCutSlopeSlider(p.getAPVTS(), "HIGHCUT_SLOPE", "db/Oct")
 {
 	addAndMakeVisible(peakFreqSlider);
 	addAndMakeVisible(peakGainSlider);

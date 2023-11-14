@@ -1,11 +1,23 @@
 #include "CustomSlider.h"
 
-CustomSlider::CustomSlider(juce::AudioProcessorValueTreeState& state, juce::String parameterID)
-	: juce::Slider(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag, juce::Slider::TextEntryBoxPosition::NoTextBox)
+CustomSlider::CustomSlider(juce::AudioProcessorValueTreeState &state, juce::String parameterID, juce::String unit)
+	: component(*state.getParameter(parameterID), unit)
 {
-	attachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(state, parameterID, *this);
+	attachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(state, parameterID, component);
+	addAndMakeVisible(component);
 }
 
-void CustomSlider::paint(juce::Graphics& g) { juce::Slider::paint(g); }
+void CustomSlider::paint(juce::Graphics &g)
+{
+	/* juce::Slider::paint(g); */
+}
 
-void CustomSlider::resized() { juce::Slider::resized(); }
+void CustomSlider::resized()
+{
+	/* juce::Slider::resized(); */
+	juce::FlexBox fb;
+	fb.flexDirection = juce::FlexBox::Direction::column;
+	fb.items.add(juce::FlexItem(component).withFlex(1.0f));
+
+	fb.performLayout(getLocalBounds().toFloat());
+}

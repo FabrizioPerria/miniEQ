@@ -20,6 +20,7 @@ class AudioPluginAudioProcessorEditor : public juce::AudioProcessorEditor
 	// access the processor object that created it.
 	AudioPluginAudioProcessor &processorRef;
 
+	ResponseCurveComponent responseCurveComponent;
 	CustomSlider peakFreqSlider;
 	CustomSlider peakGainSlider;
 	CustomSlider peakQualitySlider;
@@ -27,8 +28,6 @@ class AudioPluginAudioProcessorEditor : public juce::AudioProcessorEditor
 	CustomSlider highCutFreqSlider;
 	CustomSlider lowCutSlopeSlider;
 	CustomSlider highCutSlopeSlider;
-
-	ResponseCurveComponent responseCurveComponent;
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioPluginAudioProcessorEditor)
 };
