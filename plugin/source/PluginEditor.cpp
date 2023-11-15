@@ -6,7 +6,7 @@
 //==============================================================================
 AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor(AudioPluginAudioProcessor &p)
 	: AudioProcessorEditor(&p), processorRef(p), responseCurveComponent(p), peakFreqSlider(p.getAPVTS(), "PEAK_FREQUENCY", "Hz"),
-	  peakGainSlider(p.getAPVTS(), "PEAK_GAIN", ""), peakQualitySlider(p.getAPVTS(), "PEAK_QUALITY", ""),
+	  peakGainSlider(p.getAPVTS(), "PEAK_GAIN", "dB"), peakQualitySlider(p.getAPVTS(), "PEAK_QUALITY", ""),
 	  lowCutFreqSlider(p.getAPVTS(), "LOWCUT_FREQUENCY", "Hz"), highCutFreqSlider(p.getAPVTS(), "HIGHCUT_FREQUENCY", "Hz"),
 	  lowCutSlopeSlider(p.getAPVTS(), "LOWCUT_SLOPE", "db/Oct"), highCutSlopeSlider(p.getAPVTS(), "HIGHCUT_SLOPE", "db/Oct")
 {

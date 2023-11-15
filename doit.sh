@@ -3,6 +3,6 @@
 set -e
 
 cmake -S. -Bbuild
-cmake --build build -j8 --clean-first
+cmake --build build -j10
 
 pushd build && ctest && popd
