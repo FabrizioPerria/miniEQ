@@ -7,14 +7,8 @@ CustomSlider::CustomSlider(juce::AudioProcessorValueTreeState &state, juce::Stri
 	addAndMakeVisible(component);
 }
 
-void CustomSlider::paint(juce::Graphics &g)
-{
-	/* juce::Slider::paint(g); */
-}
-
 void CustomSlider::resized()
 {
-	/* juce::Slider::resized(); */
 	juce::FlexBox fb;
 	fb.flexDirection = juce::FlexBox::Direction::column;
 	fb.items.add(juce::FlexItem(component).withFlex(1.0f));

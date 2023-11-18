@@ -15,12 +15,12 @@ class Slope
 
 	static juce::StringArray toArray()
 	{
-		return {"12 db/Oct", "24 db/Oct", "36 db/Oct", "48 db/Oct"};
+		return {"12", "24", "36", "48"};
 	}
 
 	static Slope fromFloat(float f)
 	{
-		return static_cast<Value>(( int ) f);
+		return static_cast<Value>((int)f);
 	}
 
 	constexpr Slope(Value aType) : value(aType)
