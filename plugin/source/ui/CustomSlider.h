@@ -10,22 +10,18 @@ struct SliderLookAndFeel : public juce::LookAndFeel_V4
 	{
 		/* juce::LookAndFeel_V4::drawRotarySlider(g, x, y, width, height, sliderPosProportional, rotaryStartAngle, rotaryEndAngle, slider);
 		 */
-		auto bounds = juce::Rectangle<float>(x, y, width, height);
-		// FIXME: Draw guides to help development
-		g.setColour(juce::Colours::white); // TODO: delete guide
-		g.drawRect(bounds, 1.0f);		   // TODO: delete guide
+		auto sliderBounds = juce::Rectangle<float>(x, y, width, height);
+		g.setColour(juce::Colours::orange); 
+		g.drawEllipse(sliderBounds, 1.0f);
+		g.fillEllipse(sliderBounds);
 
-		g.setColour(juce::Colours::orange); // TODO: delete guide
-		g.drawEllipse(bounds, 1.0f);		// TODO: delete guide
-		g.fillEllipse(bounds);				// TODO: delete guide
-
-		auto center = bounds.getCentre();
+		auto center = sliderBounds.getCentre();
 		juce::Path path;
 		juce::Rectangle<float> pointer;
 		const int margin = 2;
 		pointer.setLeft(center.getX() - margin);
 		pointer.setRight(center.getX() + margin);
-		pointer.setTop(bounds.getY() - margin);
+		pointer.setTop(sliderBounds.getY() - margin);
 		pointer.setBottom(center.getY());
 
 		path.addRectangle(pointer);
@@ -66,9 +62,18 @@ class EQSliderComponent : public juce::Slider
 
 		auto range = getRange();
 		auto sliderBounds = getSliderBounds();
+		
+		drawBounds(g, juce::Colours::white, sliderBounds);
+		drawBounds(g, juce::Colours::orange, getLocalBounds());
 
 		lnf.drawRotarySlider(g, sliderBounds.getX(), sliderBounds.getY(), sliderBounds.getWidth(), sliderBounds.getHeight(),
 							 (float)juce::jmap(getValue(), range.getStart(), range.getEnd(), 0.0, 1.0), minAngle, maxAngle, *this);
+	}
+	
+	void drawBounds(juce::Graphics &g, juce::Colour color, juce::Rectangle<int> bounds)
+	{
+		g.setColour(color);
+		g.drawRect(bounds, 1.0f);
 	}
 
 	void resized() override
@@ -78,7 +83,13 @@ class EQSliderComponent : public juce::Slider
 
 	juce::Rectangle<int> getSliderBounds() const
 	{
-		return getLocalBounds();
+		auto size = juce::jmin(getWidth(), getHeight());
+		size -= getTextHeight() * 2;
+		juce::Rectangle<int> bounds;
+		bounds.setSize(size, size);
+		bounds.setCentre(getLocalBounds().getCentreX(), 0);
+		bounds.setY(2);
+		return bounds;
 	}
 
 	juce::String getDisplayText() const;
