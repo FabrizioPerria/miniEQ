@@ -1,6 +1,5 @@
 #pragma once
 
-#include "data/EQParams.h"
 #include "data/MonoFilter.h"
 #include <juce_audio_processors/juce_audio_processors.h>
 

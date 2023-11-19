@@ -30,9 +30,6 @@ class EQSliderComponent : public juce::Slider
 		auto range = getRange();
 		auto sliderBounds = getSliderBounds();
 
-		/* drawBounds(g, juce::Colours::white, sliderBounds);		// TODO: remove */
-		/* drawBounds(g, juce::Colours::orange, getLocalBounds()); // TODO: remove */
-
 		lnf.drawRotarySlider(g, sliderBounds.getX(), sliderBounds.getY(), sliderBounds.getWidth(), sliderBounds.getHeight(),
 							 (float)juce::jmap(getValue(), range.getStart(), range.getEnd(), 0.0, 1.0), minAngle, maxAngle, *this);
 	}
@@ -55,16 +52,26 @@ class EQSliderComponent : public juce::Slider
 		juce::Rectangle<int> bounds;
 		bounds.setSize(size, size);
 		bounds.setCentre(getLocalBounds().getCentreX(), 0);
-		bounds.setY(2);
+		bounds.setY(5);
 		return bounds;
 	}
 
 	juce::String getDisplayText() const
 	{
+		if (auto *audioParam = dynamic_cast<juce::AudioParameterFloat *>(param))
+		{
+			auto value = getValue();
+			bool isValueLarge = value > 999.f;
+			if (isValueLarge)
+			{
+				value /= 1000.f;
+			}
+			return juce::String(value, isValueLarge ? 2 : 0) + (isValueLarge ? "k" : "") + suffix;
+		}
 		return param->getCurrentValueAsText() + suffix;
 	}
 
-	float getTextHeight() const
+	int getTextHeight() const
 	{
 		return 14.f;
 	}
