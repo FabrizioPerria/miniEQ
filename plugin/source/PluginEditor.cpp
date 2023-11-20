@@ -1,6 +1,5 @@
 #include "PluginEditor.h"
 #include "PluginProcessor.h"
-#include "ui/ResponseCurveComponent.h"
 #include <JuceHeader.h>
 
 //==============================================================================
@@ -10,6 +9,21 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor(AudioPluginAudi
 	  lowCutFreqSlider(p.getAPVTS(), "LOWCUT_FREQUENCY", "Hz"), highCutFreqSlider(p.getAPVTS(), "HIGHCUT_FREQUENCY", "Hz"),
 	  lowCutSlopeSlider(p.getAPVTS(), "LOWCUT_SLOPE", "db/Oct"), highCutSlopeSlider(p.getAPVTS(), "HIGHCUT_SLOPE", "db/Oct")
 {
+	peakFreqSlider.addLabel(0.f, "20Hz");
+	peakFreqSlider.addLabel(1.f, "20kHz");
+	lowCutFreqSlider.addLabel(0.f, "20Hz");
+	lowCutFreqSlider.addLabel(1.f, "20kHz");
+	highCutFreqSlider.addLabel(0.f, "20Hz");
+	highCutFreqSlider.addLabel(1.f, "20kHz");
+	peakGainSlider.addLabel(0.f, "-24dB");
+	peakGainSlider.addLabel(1.f, "+24dB");
+	peakQualitySlider.addLabel(0.f, "0.1");
+	peakQualitySlider.addLabel(1.f, "10.0");
+	lowCutSlopeSlider.addLabel(0.f, "12dB/Oct");
+	lowCutSlopeSlider.addLabel(1.f, "48dB/Oct");
+	highCutSlopeSlider.addLabel(0.f, "12dB/Oct");
+	highCutSlopeSlider.addLabel(1.f, "48dB/Oct");
+
 	addAndMakeVisible(peakFreqSlider);
 	addAndMakeVisible(peakGainSlider);
 	addAndMakeVisible(peakQualitySlider);
@@ -19,7 +33,7 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor(AudioPluginAudi
 	addAndMakeVisible(highCutSlopeSlider);
 	addAndMakeVisible(responseCurveComponent);
 
-	setSize(600, 400);
+	setSize(600, 480);
 }
 
 AudioPluginAudioProcessorEditor::~AudioPluginAudioProcessorEditor()

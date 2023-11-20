@@ -31,7 +31,8 @@ target_sources(${PROJECT_NAME}
     PRIVATE
         source/PluginEditor.cpp
         source/PluginProcessor.cpp
-        source/ui/CustomSlider.cpp
+        source/ui/EQSliderComponent.cpp
+        source/ui/SliderWithLabelComponent.cpp
         source/ui/ResponseCurveComponent.cpp
         source/ui/LookAndFeel/SliderLookAndFeel.cpp
         source/data/MonoFilter.cpp

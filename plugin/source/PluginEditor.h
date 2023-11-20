@@ -1,6 +1,6 @@
 #pragma once
 #include "PluginProcessor.h"
-#include "ui/CustomSlider.h"
+#include "ui/EQSliderComponent.h"
 #include "ui/ResponseCurveComponent.h"
 #include <JuceHeader.h>
 
@@ -21,13 +21,13 @@ class AudioPluginAudioProcessorEditor : public juce::AudioProcessorEditor
 	AudioPluginAudioProcessor &processorRef;
 
 	ResponseCurveComponent responseCurveComponent;
-	CustomSlider peakFreqSlider;
-	CustomSlider peakGainSlider;
-	CustomSlider peakQualitySlider;
-	CustomSlider lowCutFreqSlider;
-	CustomSlider highCutFreqSlider;
-	CustomSlider lowCutSlopeSlider;
-	CustomSlider highCutSlopeSlider;
+	EQSliderComponent peakFreqSlider;
+	EQSliderComponent peakGainSlider;
+	EQSliderComponent peakQualitySlider;
+	EQSliderComponent lowCutFreqSlider;
+	EQSliderComponent highCutFreqSlider;
+	EQSliderComponent lowCutSlopeSlider;
+	EQSliderComponent highCutSlopeSlider;
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioPluginAudioProcessorEditor)
 };

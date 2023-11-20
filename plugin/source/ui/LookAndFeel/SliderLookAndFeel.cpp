@@ -1,5 +1,5 @@
-#include "ui/Lookandfeel/SliderLookAndFeel.h"
-#include "ui/EQSliderComponent.h"
+#include "ui/LookAndFeel/SliderLookAndFeel.h"
+#include "ui/SliderWithLabelComponent.h"
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_core/juce_core.h>
 
@@ -14,7 +14,7 @@ void SliderLookAndFeel::drawRotarySlider(juce::Graphics &g, int x, int y, int wi
 	g.setColour(juce::Colours::purple);
 	g.fillEllipse(sliderBounds.toFloat());
 
-	if (auto customSlider = dynamic_cast<EQSliderComponent *>(&slider))
+	if (auto customSlider = dynamic_cast<SliderWithLabelsComponent *>(&slider))
 	{
 		auto center = sliderBounds.getCentre();
 		juce::Path path;
@@ -34,7 +34,7 @@ void SliderLookAndFeel::drawRotarySlider(juce::Graphics &g, int x, int y, int wi
 		g.setFont((float)customSlider->getTextHeight());
 		auto textWidth = g.getCurrentFont().getStringWidth(customSlider->getDisplayText());
 		juce::Rectangle<int> textBounds;
-		textBounds.setSize(textWidth + 4, customSlider->getTextHeight() + 2);
+		textBounds.setSize(textWidth + 4, (int)customSlider->getTextHeight() + 2);
 		textBounds.setCentre(center.getX(), center.getY());
 		g.setColour(juce::Colours::black);
 		g.fillRect(textBounds);

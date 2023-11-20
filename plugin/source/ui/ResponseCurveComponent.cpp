@@ -8,6 +8,7 @@ ResponseCurveComponent::ResponseCurveComponent(AudioPluginAudioProcessor &proces
 		param->addListener(this);
 	}
 
+	updateFilters(p.getAPVTS(), drawChannel, p.getSampleRate());
 	startTimerHz(60);
 }
 
@@ -23,7 +24,7 @@ ResponseCurveComponent::~ResponseCurveComponent()
 
 void ResponseCurveComponent::paint(juce::Graphics &g)
 {
-	auto drawResponseArea = getLocalBounds(); //.removeFromTop((int)((float)getHeight() * 0.33f));
+	auto drawResponseArea = getLocalBounds();
 	auto h = drawResponseArea.getHeight();
 	auto w = drawResponseArea.getWidth();
 

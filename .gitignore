@@ -4,3 +4,4 @@ libs/
 .cache/
 .DS_Store
 plan.md
+.vscode
