@@ -20,9 +20,9 @@ class ResponseCurveComponent : public juce::Component, public juce::AudioProcess
 
 	void updateChain();
 	void updateResponseCurve();
-	juce::Rectangle<int> getCanvasArea();
-	juce::Rectangle<int> getRenderArea();
-	juce::Rectangle<int> getAnalisysArea();
+	juce::Rectangle<float> getCanvasArea();
+	juce::Rectangle<float> getRenderArea();
+	juce::Rectangle<float> getAnalisysArea();
 
 	juce::Atomic<bool> parametersChanged {false};
 	MonoFilter drawChannel;
