@@ -1,5 +1,6 @@
 #include "ui/ResponseCurveComponent.h"
 #include "PluginProcessor.h"
+#include <juce_gui_extra/juce_gui_extra.h>
 
 ResponseCurveComponent::ResponseCurveComponent(AudioPluginAudioProcessor &processorRef) : p(processorRef)
 {
@@ -24,12 +25,10 @@ ResponseCurveComponent::~ResponseCurveComponent()
 
 void ResponseCurveComponent::paint(juce::Graphics &g)
 {
-	auto drawResponseArea = getLocalBounds();
-	auto h = drawResponseArea.getHeight();
-	auto w = drawResponseArea.getWidth();
+	g.drawImage(background, getCanvasArea().toFloat());
 
-	g.setColour(juce::Colours::black);
-	g.fillRect(drawResponseArea);
+	auto drawResponseArea = getAnalisysArea();
+	auto w = drawResponseArea.getWidth();
 
 	auto &lowCut = drawChannel.get<ChainPositions::LowCut>();
 	auto &peak = drawChannel.get<ChainPositions::Peak>();
@@ -68,28 +67,6 @@ void ResponseCurveComponent::paint(juce::Graphics &g)
 		mags[(size_t)i] = juce::Decibels::gainToDecibels(mag);
 	}
 
-	g.setColour(juce::Colours::orange);
-	g.drawRoundedRectangle(drawResponseArea.toFloat(), 4.f, 1.f);
-
-	g.setColour(juce::Colours::cyan);
-	g.setOpacity(0.5f);
-	g.setFont(10.0f);
-
-	std::vector<float> freqs {20.0f, 50.0f, 100.0f, 200.0f, 500.0f, 1000.0f, 2000.0f, 5000.0f, 10000.0f};
-	for (auto freq : freqs)
-	{
-		float x = (float)w * juce::mapFromLog10(freq, 20.0f, 20000.0f);
-		g.drawLine(x, 0, x, (float)h);
-		g.drawText(juce::String(freq) + " Hz", (int)x, 0, 50, 20, juce::Justification::centred, false);
-	}
-
-	for (int i = 1; i < 4; ++i)
-	{
-		float y = (float)(i * h) / 4.0f;
-		g.drawLine(0, y, (float)w, y);
-		g.drawText(juce::String((i - 2) * 12) + " dB", 0, (int)y, 50, 20, juce::Justification::centred, false);
-	}
-
 	juce::Path responseCurve;
 	const double outputMin = drawResponseArea.getBottom();
 	const double outputMax = drawResponseArea.getY();
@@ -108,6 +85,72 @@ void ResponseCurveComponent::paint(juce::Graphics &g)
 
 void ResponseCurveComponent::resized()
 {
+
+	background = juce::Image(juce::Image::PixelFormat::RGB, getCanvasArea().getWidth(), getCanvasArea().getHeight(), true);
+	auto g = juce::Graphics(background);
+
+	g.setColour(juce::Colours::black);
+	g.fillRect(getCanvasArea());
+
+	auto drawResponseArea = getAnalisysArea();
+	auto w = drawResponseArea.getWidth();
+	auto h = drawResponseArea.getHeight();
+	auto left = drawResponseArea.getX();
+	auto top = drawResponseArea.getY();
+	auto bottom = drawResponseArea.getBottom();
+	auto right = drawResponseArea.getRight();
+
+	g.setColour(juce::Colours::cyan);
+	g.setOpacity(0.5f);
+	g.setFont(10.0f);
+
+	std::vector<float> freqs {20.0f,  30.0f,   40.0f,	50.0f,	 100.0f,  200.0f,  300.0f,	 400.0f,
+							  500.0f, 1000.0f, 2000.0f, 3000.0f, 4000.0f, 5000.0f, 10000.0f, 20000.0f};
+	for (auto freq : freqs)
+	{
+		float x = (float)w * juce::mapFromLog10(freq, 20.0f, 20000.0f);
+		g.drawVerticalLine(left + x, top, bottom);
+		/* g.drawText(juce::String(freq) + " Hz", (int)x, 0, 50, 20, juce::Justification::centred, false); */
+	}
+
+	std::vector<float> gains {-24.0f, -12.0f, 0.0f, 12.0f, 24.0f};
+	for (auto gain : gains)
+	{
+		float y = juce::jmap(gain, -24.0f, 24.0f, (float)bottom, (float)top);
+		g.setColour(gain == 0.0f ? juce::Colours::lime : juce::Colours::cyan);
+		g.setOpacity(gain == 0.0f ? 1 : 0.5);
+		g.drawHorizontalLine(y, left, right);
+		/* g.drawText(juce::String(gain) + " dB", 0, (int)y, 50, 20, juce::Justification::centred, false); */
+	}
+	g.setOpacity(1.0f);
+	g.setColour(juce::Colours::orange);
+	g.drawRoundedRectangle(getRenderArea().toFloat(), 4.f, 2.f);
+}
+
+juce::Rectangle<int> ResponseCurveComponent::getCanvasArea()
+{
+	juce::Rectangle<int> bounds = getLocalBounds();
+	return bounds;
+}
+
+juce::Rectangle<int> ResponseCurveComponent::getRenderArea()
+{
+	juce::Rectangle<int> bounds = getCanvasArea();
+	bounds.removeFromTop(12);
+	bounds.removeFromBottom(2);
+	bounds.removeFromRight(20);
+	bounds.removeFromLeft(20);
+
+	return bounds;
+}
+
+juce::Rectangle<int> ResponseCurveComponent::getAnalisysArea()
+{
+	juce::Rectangle<int> bounds = getRenderArea();
+	bounds.removeFromTop(4);
+	bounds.removeFromBottom(4);
+
+	return bounds;
 }
 
 void ResponseCurveComponent::timerCallback()

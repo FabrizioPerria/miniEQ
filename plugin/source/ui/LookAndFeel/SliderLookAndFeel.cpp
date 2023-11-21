@@ -23,7 +23,7 @@ void SliderLookAndFeel::drawRotarySlider(juce::Graphics &g, int x, int y, int wi
 		pointer.setLeft((float)(center.getX() - margin));
 		pointer.setRight((float)(center.getX() + margin));
 		pointer.setTop((float)sliderBounds.getY());
-		pointer.setBottom((float)center.getY() - (float)customSlider->getTextHeight() * 1.5f);
+		pointer.setBottom((float)center.getY() - (float)customSlider->getTextHeight() * 1.8f);
 		path.addRoundedRectangle(pointer, 2.0f);
 
 		auto rotateAngle = juce::jmap(sliderPosProportional, 0.0f, 1.0f, rotaryStartAngle, rotaryEndAngle);
