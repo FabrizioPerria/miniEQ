@@ -131,12 +131,22 @@ void ResponseCurveComponent::resized()
 		g.setColour(gain == 0.0f ? juce::Colours::lime : juce::Colours::cyan);
 		g.setOpacity(gain == 0.0f ? 1 : 0.5);
 		g.drawHorizontalLine((int)y, left, right);
-		auto text = (gain > 0 ? "+" : "") + juce::String(gain);
-		juce::Rectangle<float> r;
-		r.setSize((float)font.getStringWidth(text), fontHeight);
-		r.setCentre(0, y);
-		r.setRight(left - 2);
-		g.drawFittedText(text, r.toNearestInt(), juce::Justification::centred, 1, 1.0f);
+
+		juce::Rectangle<float> responseGains;
+		auto responseText = (gain > 0 ? "+" : "") + juce::String(gain);
+		auto responseTextSize = (float)font.getStringWidth(responseText);
+		responseGains.setSize(responseTextSize, fontHeight);
+		responseGains.setCentre(0, y);
+		responseGains.setX(right + 2);
+		g.drawFittedText(responseText, responseGains.toNearestInt(), juce::Justification::left, 1, 1.0f);
+
+		juce::Rectangle<float> spectrumGains;
+		auto spectrumText = juce::String(gain - 24);
+		auto spectrumTextSize = (float)font.getStringWidth(spectrumText);
+		spectrumGains.setSize(spectrumTextSize, fontHeight);
+		spectrumGains.setCentre(0, y);
+		spectrumGains.setX(left - spectrumTextSize - 2);
+		g.drawFittedText(spectrumText, spectrumGains.toNearestInt(), juce::Justification::right, 1, 1.0f);
 	}
 	g.setOpacity(1.0f);
 	g.setColour(juce::Colours::orange);
