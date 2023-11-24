@@ -49,11 +49,14 @@ class AudioPluginAudioProcessor : public juce::AudioProcessor
 
 	using Blocktype = juce::AudioBuffer<float>;
 	using ChannelFifo = SingleChannelSampleFifo<Blocktype>;
-	ChannelFifo leftChannelFifo{Channel::Left}, rightChannelFifo{Channel::Right};
+	ChannelFifo leftChannelFifo {Channel::Left}, rightChannelFifo {Channel::Right};
+
   private:
 	juce::AudioProcessorValueTreeState apvts {*this, nullptr, "Parameters", createParameters()};
 
 	MonoFilter leftChannelFilter, rightChannelFilter;
+
+	juce::dsp::Oscillator<float> osc {[](float x) { return std::sin(x); }};
 
 	juce::AudioProcessorValueTreeState::ParameterLayout createParameters();
 

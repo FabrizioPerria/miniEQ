@@ -34,7 +34,6 @@ void ResponseCurveComponent::paint(juce::Graphics &g)
 	auto drawResponseArea = getAnalysisArea();
 
 	auto left = drawResponseArea.getX();
-	auto top = drawResponseArea.getY();
 
 	leftFFTCurve.applyTransform(juce::AffineTransform().translation(left, 0));
 	g.setColour(juce::Colours::skyblue);

@@ -97,12 +97,15 @@ void AudioPluginAudioProcessor::prepareToPlay(double sampleRate, int samplesPerB
 
 	rightChannelFilter.prepare(spec);
 	leftChannelFilter.prepare(spec);
-	
+
 	leftChannelFifo.prepare(samplesPerBlock);
 	rightChannelFifo.prepare(samplesPerBlock);
 
 	updateFilters(apvts, leftChannelFilter, sampleRate);
 	updateFilters(apvts, rightChannelFilter, sampleRate);
+
+	spec.numChannels = getTotalNumOutputChannels();
+	osc.prepare(spec);
 }
 
 void AudioPluginAudioProcessor::releaseResources()
@@ -150,12 +153,17 @@ void AudioPluginAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, j
 	updateFilters(apvts, rightChannelFilter, getSampleRate());
 
 	auto block = juce::dsp::AudioBlock<float>(buffer);
+
+	/* buffer.clear(); */
+	/* osc.setFrequency(JUCE_LIVE_CONSTANT(1000)); */
+	/* osc.process(juce::dsp::ProcessContextReplacing<float>(block)); */
+
 	auto leftBlock = block.getSingleChannelBlock(0);
 	auto rightBlock = block.getSingleChannelBlock(1);
 
 	rightChannelFilter.process(juce::dsp::ProcessContextReplacing<float>(rightBlock));
 	leftChannelFilter.process(juce::dsp::ProcessContextReplacing<float>(leftBlock));
-	
+
 	leftChannelFifo.update(buffer);
 	rightChannelFifo.update(buffer);
 }
