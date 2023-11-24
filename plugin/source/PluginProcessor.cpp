@@ -104,7 +104,7 @@ void AudioPluginAudioProcessor::prepareToPlay(double sampleRate, int samplesPerB
 	updateFilters(apvts, leftChannelFilter, sampleRate);
 	updateFilters(apvts, rightChannelFilter, sampleRate);
 
-	spec.numChannels = getTotalNumOutputChannels();
+	spec.numChannels = (uint32_t)getTotalNumOutputChannels();
 	osc.prepare(spec);
 }
 

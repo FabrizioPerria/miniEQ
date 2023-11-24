@@ -35,7 +35,7 @@ target_sources(${PROJECT_NAME}
         source/ui/EQSliderComponent.cpp
         source/ui/SliderWithLabelComponent.cpp
         source/ui/ResponseCurveComponent.cpp
-        source/ui/LookAndFeel/SliderLookAndFeel.cpp
+        source/ui/LookAndFeel/CustomLookAndFeel.cpp
         source/ui/ByPassButtonComponent.cpp
         source/data/MonoFilter.cpp
         source/data/EQParams.cpp

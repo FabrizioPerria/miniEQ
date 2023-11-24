@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ui/LookAndFeel/SliderLookAndFeel.h"
+#include "ui/LookAndFeel/CustomLookAndFeel.h"
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_core/juce_core.h>
 
@@ -34,7 +34,7 @@ class SliderWithLabelsComponent : public juce::Slider
   private:
 	juce::RangedAudioParameter *param;
 	juce::String suffix;
-	SliderLookAndFeel lnf;
+	CustomLookAndFeel lnf;
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SliderWithLabelsComponent)
 };
