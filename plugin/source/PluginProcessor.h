@@ -1,6 +1,8 @@
 #pragma once
 
 #include "data/MonoFilter.h"
+#include "utils/Channel.h"
+#include "utils/SingleChannelSampleFifo.h"
 #include <juce_audio_processors/juce_audio_processors.h>
 
 //==============================================================================
@@ -45,10 +47,13 @@ class AudioPluginAudioProcessor : public juce::AudioProcessor
 
 	juce::AudioProcessorValueTreeState &getAPVTS();
 
+	using Blocktype = juce::AudioBuffer<float>;
+	using ChannelFifo = SingleChannelSampleFifo<Blocktype>;
+	ChannelFifo leftChannelFifo{Channel::Left}, rightChannelFifo{Channel::Right};
   private:
 	juce::AudioProcessorValueTreeState apvts {*this, nullptr, "Parameters", createParameters()};
 
-	MonoFilter rightChannelFilter, leftChannelFilter;
+	MonoFilter leftChannelFilter, rightChannelFilter;
 
 	juce::AudioProcessorValueTreeState::ParameterLayout createParameters();
 

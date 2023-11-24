@@ -97,6 +97,9 @@ void AudioPluginAudioProcessor::prepareToPlay(double sampleRate, int samplesPerB
 
 	rightChannelFilter.prepare(spec);
 	leftChannelFilter.prepare(spec);
+	
+	leftChannelFifo.prepare(samplesPerBlock);
+	rightChannelFifo.prepare(samplesPerBlock);
 
 	updateFilters(apvts, leftChannelFilter, sampleRate);
 	updateFilters(apvts, rightChannelFilter, sampleRate);
@@ -152,6 +155,9 @@ void AudioPluginAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, j
 
 	rightChannelFilter.process(juce::dsp::ProcessContextReplacing<float>(rightBlock));
 	leftChannelFilter.process(juce::dsp::ProcessContextReplacing<float>(leftBlock));
+	
+	leftChannelFifo.update(buffer);
+	rightChannelFifo.update(buffer);
 }
 
 //==============================================================================

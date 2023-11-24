@@ -2,14 +2,18 @@
 #include "PluginProcessor.h"
 #include <juce_gui_extra/juce_gui_extra.h>
 
-ResponseCurveComponent::ResponseCurveComponent(AudioPluginAudioProcessor &processorRef) : p(processorRef)
+ResponseCurveComponent::ResponseCurveComponent(AudioPluginAudioProcessor &processorRef)
+	: pluginProcessor(processorRef), leftChannelFifo(&processorRef.leftChannelFifo) //, rightChannelFifo(&processorRef.rightChannelFifo)
 {
 	for (auto param : processorRef.getParameters())
 	{
 		param->addListener(this);
 	}
 
-	updateFilters(p.getAPVTS(), drawChannel, p.getSampleRate());
+	leftDataGenerator.changeOrder(FFTOrder::order2048);
+	monoBuffer.setSize(1, (int)leftDataGenerator.getFFTSize());
+
+	updateFilters(pluginProcessor.getAPVTS(), drawChannel, pluginProcessor.getSampleRate());
 	startTimerHz(60);
 }
 
@@ -17,7 +21,7 @@ ResponseCurveComponent::~ResponseCurveComponent()
 {
 	stopTimer();
 
-	for (auto param : p.getParameters())
+	for (auto param : pluginProcessor.getParameters())
 	{
 		param->removeListener(this);
 	}
@@ -27,14 +31,22 @@ void ResponseCurveComponent::paint(juce::Graphics &g)
 {
 	g.drawImage(background, getCanvasArea());
 
-	auto drawResponseArea = getAnalisysArea();
+	auto drawResponseArea = getAnalysisArea();
+
+	auto left = drawResponseArea.getX();
+	auto top = drawResponseArea.getY();
+
+	leftFFTCurve.applyTransform(juce::AffineTransform().translation(left, 0));
+	g.setColour(juce::Colours::skyblue);
+	g.strokePath(leftFFTCurve, juce::PathStrokeType(1.f));
+
 	auto w = drawResponseArea.toNearestInt().getWidth();
 
 	auto &lowCut = drawChannel.get<ChainPositions::LowCut>();
 	auto &peak = drawChannel.get<ChainPositions::Peak>();
 	auto &highCut = drawChannel.get<ChainPositions::HighCut>();
 
-	auto sampleRate = p.getSampleRate();
+	auto sampleRate = pluginProcessor.getSampleRate();
 
 	std::vector<float> mags;
 	mags.resize((size_t)w);
@@ -81,6 +93,9 @@ void ResponseCurveComponent::paint(juce::Graphics &g)
 
 	g.setColour(juce::Colours::white);
 	g.strokePath(responseCurve, juce::PathStrokeType(2.f));
+	g.setOpacity(1.0f);
+	g.setColour(juce::Colours::orange);
+	g.drawRoundedRectangle(getRenderArea(), 4.f, 2.f);
 }
 
 void ResponseCurveComponent::resized()
@@ -92,7 +107,7 @@ void ResponseCurveComponent::resized()
 	g.setColour(juce::Colours::black);
 	g.fillRect(canvas);
 
-	auto drawResponseArea = getAnalisysArea();
+	auto drawResponseArea = getAnalysisArea();
 	auto w = drawResponseArea.getWidth();
 	auto left = drawResponseArea.getX();
 	auto top = drawResponseArea.getY();
@@ -148,9 +163,6 @@ void ResponseCurveComponent::resized()
 		spectrumGains.setX(left - spectrumTextSize - 2);
 		g.drawFittedText(spectrumText, spectrumGains.toNearestInt(), juce::Justification::right, 1, 1.0f);
 	}
-	g.setOpacity(1.0f);
-	g.setColour(juce::Colours::orange);
-	g.drawRoundedRectangle(getRenderArea(), 4.f, 2.f);
 }
 
 juce::Rectangle<float> ResponseCurveComponent::getCanvasArea()
@@ -170,7 +182,7 @@ juce::Rectangle<float> ResponseCurveComponent::getRenderArea()
 	return bounds;
 }
 
-juce::Rectangle<float> ResponseCurveComponent::getAnalisysArea()
+juce::Rectangle<float> ResponseCurveComponent::getAnalysisArea()
 {
 	auto bounds = getRenderArea();
 	bounds.removeFromTop(4);
@@ -181,9 +193,43 @@ juce::Rectangle<float> ResponseCurveComponent::getAnalisysArea()
 
 void ResponseCurveComponent::timerCallback()
 {
-	if (parametersChanged.compareAndSetBool(false, true))
+	juce::AudioBuffer<float> tempIncomingBuffer;
+
+	while (leftChannelFifo->getNumCompleteBuffersAvailable() > 0)
 	{
-		updateFilters(p.getAPVTS(), drawChannel, p.getSampleRate());
+		if (leftChannelFifo->getAudioBuffer(tempIncomingBuffer))
+		{
+			auto size = tempIncomingBuffer.getNumSamples();
+			juce::FloatVectorOperations::copy(monoBuffer.getWritePointer(0, 0), monoBuffer.getReadPointer(0, size),
+											  monoBuffer.getNumSamples() - size);
+			juce::FloatVectorOperations::copy(monoBuffer.getWritePointer(0, monoBuffer.getNumSamples() - size),
+											  tempIncomingBuffer.getReadPointer(0, 0), size);
+
+			leftDataGenerator.produceFFTDataForRendering(monoBuffer, -48.0f);
+		}
+
+		const auto bounds = getAnalysisArea();
+		const auto fftSize = (int)leftDataGenerator.getFFTSize();
+		const auto binWidth = (float)pluginProcessor.getSampleRate() / (float)fftSize;
+
+		while (leftDataGenerator.getNumAvailableFFTDataBlocks() > 0)
+		{
+			std::vector<float> fftData;
+			if (leftDataGenerator.getFFTData(fftData))
+			{
+				fftPathGenerator.generatePath(fftData, bounds, fftSize, binWidth, -48.0f);
+			}
+		}
+
+		while (fftPathGenerator.getNumPathsAvailable() > 0)
+		{
+			fftPathGenerator.getPath(leftFFTCurve);
+		}
+
+		if (parametersChanged.compareAndSetBool(false, true))
+		{
+			updateFilters(pluginProcessor.getAPVTS(), drawChannel, pluginProcessor.getSampleRate());
+		}
 		repaint();
 	}
 }

@@ -2,6 +2,8 @@
 
 #include "PluginProcessor.h"
 #include "data/MonoFilter.h"
+#include "utils/FFTDataGenerator.h"
+#include "utils/FFTPathGenerator.h"
 #include <juce_audio_processors/juce_audio_processors.h>
 
 class ResponseCurveComponent : public juce::Component, public juce::AudioProcessorParameter::Listener, public juce::Timer
@@ -22,12 +24,23 @@ class ResponseCurveComponent : public juce::Component, public juce::AudioProcess
 	void updateResponseCurve();
 	juce::Rectangle<float> getCanvasArea();
 	juce::Rectangle<float> getRenderArea();
-	juce::Rectangle<float> getAnalisysArea();
+	juce::Rectangle<float> getAnalysisArea();
 
 	juce::Atomic<bool> parametersChanged {false};
 	MonoFilter drawChannel;
 	juce::Image background;
-	AudioPluginAudioProcessor &p;
+	AudioPluginAudioProcessor &pluginProcessor;
+
+	AudioPluginAudioProcessor::ChannelFifo *leftChannelFifo;
+	/* AudioPluginAudioProcessor::ChannelFifo *rightChannelFifo; */
+
+	juce::AudioBuffer<float> monoBuffer;
+
+	FFTDataGenerator<std::vector<float>> leftDataGenerator;
+
+	FFTPathGenerator<juce::Path> fftPathGenerator;
+
+	juce::Path leftFFTCurve;
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ResponseCurveComponent)
 };
