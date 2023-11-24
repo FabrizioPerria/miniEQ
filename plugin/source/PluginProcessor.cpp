@@ -230,6 +230,13 @@ juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::c
 															Slope::toArray(), 0));
 	params.add(std::make_unique<juce::AudioParameterChoice>(ParameterID {EQParams::toParamId(EQParams::HIGHCUT_SLOPE), 1}, "Highcut Slope",
 															Slope::toArray(), 0));
+	params.add(
+		std::make_unique<juce::AudioParameterBool>(ParameterID {EQParams::toParamId(EQParams::LOWCUT_BYPASS), 1}, "Lowcut Bypass", false));
+	params.add(
+		std::make_unique<juce::AudioParameterBool>(ParameterID {EQParams::toParamId(EQParams::PEAK_BYPASS), 1}, "Peak Bypass", false));
+	params.add(std::make_unique<juce::AudioParameterBool>(ParameterID {EQParams::toParamId(EQParams::HIGHCUT_BYPASS), 1}, "Highcut Bypass",
+														  false));
+	params.add( std::make_unique<juce::AudioParameterBool>(ParameterID {"AnalyzerEnabled", 1}, "AnalyzerEnabled",true));
 
 	return params;
 }

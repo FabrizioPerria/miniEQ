@@ -61,6 +61,10 @@ void updateFilters(juce::AudioProcessorValueTreeState &apvts, MonoFilter &channe
 {
 	auto parameters = EQParams::getEQParams(apvts);
 
+	channel.setBypassed<ChainPositions::LowCut>(parameters.lowCutBypassed);
+	channel.setBypassed<ChainPositions::Peak>(parameters.peakBypassed);
+	channel.setBypassed<ChainPositions::HighCut>(parameters.highCutBypassed);
+
 	updatePeakFilter(parameters, channel.get<ChainPositions::Peak>(), sampleRate);
 	updateLowCutFilter(parameters, channel.get<ChainPositions::LowCut>(), sampleRate);
 	updateHighCutFilter(parameters, channel.get<ChainPositions::HighCut>(), sampleRate);

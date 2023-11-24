@@ -9,6 +9,7 @@ class EQParams
 	float lowCutFreq {0}, highCutFreq {0};
 	float peakFreq {0}, peakGainDb {0}, peakQuality {0};
 	Slope lowCutSlope {Slope::_12}, highCutSlope {Slope::_12};
+	bool lowCutBypassed {false}, peakBypassed {false}, highCutBypassed {false};
 
 	enum Value
 	{
@@ -18,7 +19,10 @@ class EQParams
 		PEAK_GAIN,
 		PEAK_QUALITY,
 		LOWCUT_SLOPE,
-		HIGHCUT_SLOPE
+		HIGHCUT_SLOPE,
+		LOWCUT_BYPASS,
+		PEAK_BYPASS,
+		HIGHCUT_BYPASS,
 	};
 
 	static EQParams getEQParams(juce::AudioProcessorValueTreeState &apvts);
