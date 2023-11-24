@@ -236,7 +236,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::c
 		std::make_unique<juce::AudioParameterBool>(ParameterID {EQParams::toParamId(EQParams::PEAK_BYPASS), 1}, "Peak Bypass", false));
 	params.add(std::make_unique<juce::AudioParameterBool>(ParameterID {EQParams::toParamId(EQParams::HIGHCUT_BYPASS), 1}, "Highcut Bypass",
 														  false));
-	params.add( std::make_unique<juce::AudioParameterBool>(ParameterID {"AnalyzerEnabled", 1}, "AnalyzerEnabled",true));
+	params.add(std::make_unique<juce::AudioParameterBool>(ParameterID {"ANALYZER_ENABLED", 1}, "Analyzer Enabled", true));
 
 	return params;
 }

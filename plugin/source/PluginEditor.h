@@ -1,5 +1,6 @@
 #pragma once
 #include "PluginProcessor.h"
+#include "ui/BypassButtonComponent.h"
 #include "ui/EQSliderComponent.h"
 #include "ui/ResponseCurveComponent.h"
 #include <JuceHeader.h>
@@ -28,6 +29,8 @@ class AudioPluginAudioProcessorEditor : public juce::AudioProcessorEditor
 	EQSliderComponent highCutFreqSlider;
 	EQSliderComponent lowCutSlopeSlider;
 	EQSliderComponent highCutSlopeSlider;
+
+	BypassButtonComponent lowCutBypass, highCutBypass, peakBypass, analyzerEnabled;
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioPluginAudioProcessorEditor)
 };

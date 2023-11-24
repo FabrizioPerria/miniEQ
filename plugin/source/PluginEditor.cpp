@@ -1,4 +1,5 @@
 #include "PluginEditor.h"
+#include "BinaryData.h"
 #include "PluginProcessor.h"
 #include <JuceHeader.h>
 
@@ -7,7 +8,11 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor(AudioPluginAudi
 	: AudioProcessorEditor(&p), processorRef(p), responseCurveComponent(p), peakFreqSlider(p.getAPVTS(), "PEAK_FREQUENCY", "Hz"),
 	  peakGainSlider(p.getAPVTS(), "PEAK_GAIN", "dB"), peakQualitySlider(p.getAPVTS(), "PEAK_QUALITY", ""),
 	  lowCutFreqSlider(p.getAPVTS(), "LOWCUT_FREQUENCY", "Hz"), highCutFreqSlider(p.getAPVTS(), "HIGHCUT_FREQUENCY", "Hz"),
-	  lowCutSlopeSlider(p.getAPVTS(), "LOWCUT_SLOPE", "db/Oct"), highCutSlopeSlider(p.getAPVTS(), "HIGHCUT_SLOPE", "db/Oct")
+	  lowCutSlopeSlider(p.getAPVTS(), "LOWCUT_SLOPE", "db/Oct"), highCutSlopeSlider(p.getAPVTS(), "HIGHCUT_SLOPE", "db/Oct"),
+	  lowCutBypass(p.getAPVTS(), "LOWCUT_BYPASS", SVGData {BinaryData::power_svg, BinaryData::power_svgSize}),
+	  highCutBypass(p.getAPVTS(), "HIGHCUT_BYPASS", SVGData {BinaryData::power_svg, BinaryData::power_svgSize}),
+	  peakBypass(p.getAPVTS(), "PEAK_BYPASS", SVGData {BinaryData::power_svg, BinaryData::power_svgSize}),
+	  analyzerEnabled(p.getAPVTS(), "ANALYZER_ENABLED", SVGData {BinaryData::power_svg, BinaryData::power_svgSize})
 {
 	peakFreqSlider.addLabel(0.f, "20Hz");
 	peakFreqSlider.addLabel(1.f, "20kHz");
@@ -33,6 +38,11 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor(AudioPluginAudi
 	addAndMakeVisible(highCutSlopeSlider);
 	addAndMakeVisible(responseCurveComponent);
 
+	/* addAndMakeVisible(analyzerEnabled); */
+	addAndMakeVisible(lowCutBypass);
+	addAndMakeVisible(peakBypass);
+	addAndMakeVisible(highCutBypass);
+
 	setSize(600, 480);
 }
 
@@ -51,17 +61,20 @@ void AudioPluginAudioProcessorEditor::resized()
 {
 	juce::FlexBox fbLowcut;
 	fbLowcut.flexDirection = juce::FlexBox::Direction::column;
+	fbLowcut.items.add(juce::FlexItem(lowCutBypass).withHeight(25));
 	fbLowcut.items.add(juce::FlexItem(lowCutFreqSlider).withFlex(1.0f));
 	fbLowcut.items.add(juce::FlexItem(lowCutSlopeSlider).withFlex(1.0f));
 
 	juce::FlexBox fbPeak;
 	fbPeak.flexDirection = juce::FlexBox::Direction::column;
+	fbPeak.items.add(juce::FlexItem(peakBypass).withHeight(25));
 	fbPeak.items.add(juce::FlexItem(peakFreqSlider).withFlex(1.0f));
 	fbPeak.items.add(juce::FlexItem(peakGainSlider).withFlex(1.0f));
 	fbPeak.items.add(juce::FlexItem(peakQualitySlider).withFlex(1.0f));
 
 	juce::FlexBox fbHighcut;
 	fbHighcut.flexDirection = juce::FlexBox::Direction::column;
+	fbHighcut.items.add(juce::FlexItem(highCutBypass).withHeight(25));
 	fbHighcut.items.add(juce::FlexItem(highCutFreqSlider).withFlex(1.0f));
 	fbHighcut.items.add(juce::FlexItem(highCutSlopeSlider).withFlex(1.0f));
 
