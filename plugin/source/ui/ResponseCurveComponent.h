@@ -2,8 +2,7 @@
 
 #include "PluginProcessor.h"
 #include "data/MonoFilter.h"
-#include "utils/FFTDataGenerator.h"
-#include "utils/FFTPathGenerator.h"
+#include "data/SingleChannelSpectrum.h"
 #include <juce_audio_processors/juce_audio_processors.h>
 
 class ResponseCurveComponent : public juce::Component, public juce::AudioProcessorParameter::Listener, public juce::Timer
@@ -31,16 +30,7 @@ class ResponseCurveComponent : public juce::Component, public juce::AudioProcess
 	juce::Image background;
 	AudioPluginAudioProcessor &pluginProcessor;
 
-	AudioPluginAudioProcessor::ChannelFifo *leftChannelFifo;
-	/* AudioPluginAudioProcessor::ChannelFifo *rightChannelFifo; */
-
-	juce::AudioBuffer<float> monoBuffer;
-
-	FFTDataGenerator<std::vector<float>> leftDataGenerator;
-
-	FFTPathGenerator<juce::Path> fftPathGenerator;
-
-	juce::Path leftFFTCurve;
+	SingleChannelSpectrum leftChannelSpectrum, rightChannelSpectrum;
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ResponseCurveComponent)
 };

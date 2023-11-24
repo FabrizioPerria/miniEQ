@@ -3,15 +3,11 @@
 #include <juce_gui_extra/juce_gui_extra.h>
 
 ResponseCurveComponent::ResponseCurveComponent(AudioPluginAudioProcessor &processorRef)
-	: pluginProcessor(processorRef), leftChannelFifo(&processorRef.leftChannelFifo) //, rightChannelFifo(&processorRef.rightChannelFifo)
+	: pluginProcessor(processorRef), leftChannelSpectrum(&processorRef.leftChannelFifo),
+	  rightChannelSpectrum(&processorRef.rightChannelFifo)
 {
-	for (auto param : processorRef.getParameters())
-	{
-		param->addListener(this);
-	}
-
-	leftDataGenerator.changeOrder(FFTOrder::order2048);
-	monoBuffer.setSize(1, (int)leftDataGenerator.getFFTSize());
+	std::for_each(processorRef.getParameters().begin(), processorRef.getParameters().end(),
+				  [this](auto &param) { param->addListener(this); });
 
 	updateFilters(pluginProcessor.getAPVTS(), drawChannel, pluginProcessor.getSampleRate());
 	startTimerHz(60);
@@ -21,10 +17,8 @@ ResponseCurveComponent::~ResponseCurveComponent()
 {
 	stopTimer();
 
-	for (auto param : pluginProcessor.getParameters())
-	{
-		param->removeListener(this);
-	}
+	std::for_each(pluginProcessor.getParameters().begin(), pluginProcessor.getParameters().end(),
+				  [this](auto &param) { param->removeListener(this); });
 }
 
 void ResponseCurveComponent::paint(juce::Graphics &g)
@@ -33,11 +27,8 @@ void ResponseCurveComponent::paint(juce::Graphics &g)
 
 	auto drawResponseArea = getAnalysisArea();
 
-	auto left = drawResponseArea.getX();
-
-	leftFFTCurve.applyTransform(juce::AffineTransform().translation(left, 0));
-	g.setColour(juce::Colours::skyblue);
-	g.strokePath(leftFFTCurve, juce::PathStrokeType(1.f));
+	leftChannelSpectrum.drawNextFrameOfSpectrum(g, juce::Colours::limegreen);
+	rightChannelSpectrum.drawNextFrameOfSpectrum(g, juce::Colours::skyblue);
 
 	auto w = drawResponseArea.toNearestInt().getWidth();
 
@@ -192,45 +183,14 @@ juce::Rectangle<float> ResponseCurveComponent::getAnalysisArea()
 
 void ResponseCurveComponent::timerCallback()
 {
-	juce::AudioBuffer<float> tempIncomingBuffer;
+	leftChannelSpectrum.process((float)pluginProcessor.getSampleRate(), getAnalysisArea());
+	rightChannelSpectrum.process((float)pluginProcessor.getSampleRate(), getAnalysisArea());
 
-	while (leftChannelFifo->getNumCompleteBuffersAvailable() > 0)
+	if (parametersChanged.compareAndSetBool(false, true))
 	{
-		if (leftChannelFifo->getAudioBuffer(tempIncomingBuffer))
-		{
-			auto size = tempIncomingBuffer.getNumSamples();
-			juce::FloatVectorOperations::copy(monoBuffer.getWritePointer(0, 0), monoBuffer.getReadPointer(0, size),
-											  monoBuffer.getNumSamples() - size);
-			juce::FloatVectorOperations::copy(monoBuffer.getWritePointer(0, monoBuffer.getNumSamples() - size),
-											  tempIncomingBuffer.getReadPointer(0, 0), size);
-
-			leftDataGenerator.produceFFTDataForRendering(monoBuffer, -48.0f);
-		}
-
-		const auto bounds = getAnalysisArea();
-		const auto fftSize = (int)leftDataGenerator.getFFTSize();
-		const auto binWidth = (float)pluginProcessor.getSampleRate() / (float)fftSize;
-
-		while (leftDataGenerator.getNumAvailableFFTDataBlocks() > 0)
-		{
-			std::vector<float> fftData;
-			if (leftDataGenerator.getFFTData(fftData))
-			{
-				fftPathGenerator.generatePath(fftData, bounds, fftSize, binWidth, -48.0f);
-			}
-		}
-
-		while (fftPathGenerator.getNumPathsAvailable() > 0)
-		{
-			fftPathGenerator.getPath(leftFFTCurve);
-		}
-
-		if (parametersChanged.compareAndSetBool(false, true))
-		{
-			updateFilters(pluginProcessor.getAPVTS(), drawChannel, pluginProcessor.getSampleRate());
-		}
-		repaint();
+		updateFilters(pluginProcessor.getAPVTS(), drawChannel, pluginProcessor.getSampleRate());
 	}
+	repaint();
 }
 
 void ResponseCurveComponent::parameterValueChanged(int parameterIndex, float newValue)
