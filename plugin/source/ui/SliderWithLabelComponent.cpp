@@ -5,7 +5,6 @@ SliderWithLabelsComponent::SliderWithLabelsComponent(juce::RangedAudioParameter 
 	: juce::Slider(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag, juce::Slider::TextEntryBoxPosition::NoTextBox),
 	  param(&parameter), suffix(unit)
 {
-	knob = juce::Drawable::createFromImageData(BinaryData::knob_png, BinaryData::knob_pngSize);
 	setLookAndFeel(&lnf);
 }
 
@@ -42,7 +41,7 @@ void SliderWithLabelsComponent::paint(juce::Graphics &g)
 		r.setSize(g.getCurrentFont().getStringWidth(str) + 2, getTextHeight());
 		r.setCentre(c);
 		r.setY(r.getY() + getTextHeight());
-		g.setColour(juce::Colours::cyan);
+		g.setColour(isEnabled() ? juce::Colours::cyan : juce::Colours::grey);
 		g.drawFittedText(str, r.toNearestInt(), juce::Justification::centred, 1);
 	}
 }

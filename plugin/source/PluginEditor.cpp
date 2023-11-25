@@ -28,6 +28,23 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor(AudioPluginAudi
 	lowCutSlopeSlider.addLabel(1.f, "48dB/Oct");
 	highCutSlopeSlider.addLabel(0.f, "12dB/Oct");
 	highCutSlopeSlider.addLabel(1.f, "48dB/Oct");
+	
+	SafePointer<AudioPluginAudioProcessorEditor> safeThis(this);
+	lowCutBypass.onClick = [safeThis]() { 
+		safeThis->lowCutFreqSlider.setEnabled(!safeThis->lowCutBypass.getToggleState());
+		safeThis->lowCutSlopeSlider.setEnabled(!safeThis->lowCutBypass.getToggleState());
+		};
+
+	highCutBypass.onClick = [safeThis]() {
+		safeThis->highCutFreqSlider.setEnabled(!safeThis->highCutBypass.getToggleState());
+		safeThis->highCutSlopeSlider.setEnabled(!safeThis->highCutBypass.getToggleState());
+	};
+
+	peakBypass.onClick = [safeThis]() {
+		safeThis->peakFreqSlider.setEnabled(!safeThis->peakBypass.getToggleState());
+		safeThis->peakGainSlider.setEnabled(!safeThis->peakBypass.getToggleState());
+		safeThis->peakQualitySlider.setEnabled(!safeThis->peakBypass.getToggleState());
+	};
 
 	addAndMakeVisible(peakFreqSlider);
 	addAndMakeVisible(peakGainSlider);
@@ -38,7 +55,7 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor(AudioPluginAudi
 	addAndMakeVisible(highCutSlopeSlider);
 	addAndMakeVisible(responseCurveComponent);
 
-	/* addAndMakeVisible(analyzerEnabled); */
+	addAndMakeVisible(analyzerEnabled);
 	addAndMakeVisible(lowCutBypass);
 	addAndMakeVisible(peakBypass);
 	addAndMakeVisible(highCutBypass);
@@ -59,6 +76,11 @@ void AudioPluginAudioProcessorEditor::paint(juce::Graphics &g)
 
 void AudioPluginAudioProcessorEditor::resized()
 {
+	juce::FlexBox fbAnalyzer;
+	fbAnalyzer.flexDirection = juce::FlexBox::Direction::column;
+	fbAnalyzer.items.add(juce::FlexItem(analyzerEnabled).withHeight(25));
+	fbAnalyzer.items.add(juce::FlexItem(responseCurveComponent).withFlex(1.0f));
+
 	juce::FlexBox fbLowcut;
 	fbLowcut.flexDirection = juce::FlexBox::Direction::column;
 	fbLowcut.items.add(juce::FlexItem(lowCutBypass).withHeight(25));
@@ -86,7 +108,7 @@ void AudioPluginAudioProcessorEditor::resized()
 
 	juce::FlexBox fbMain;
 	fbMain.flexDirection = juce::FlexBox::Direction::column;
-	fbMain.items.add(juce::FlexItem(responseCurveComponent).withFlex(1.f));
+	fbMain.items.add(juce::FlexItem(fbAnalyzer).withFlex(1.f));
 	fbMain.items.add(juce::FlexItem(fbSliders).withFlex(2.f));
 
 	fbMain.performLayout(getLocalBounds().toFloat());

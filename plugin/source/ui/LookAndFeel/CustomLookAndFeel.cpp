@@ -12,35 +12,25 @@ void CustomLookAndFeel::drawRotarySlider(juce::Graphics &g, int x, int y, int wi
 		jassert(rotaryStartAngle < rotaryEndAngle);
 
 		auto sliderBounds = juce::Rectangle<int>(x, y, width, height);
-		/* g.setColour(juce::Colours::orange); */
-		/* g.drawEllipse(sliderBounds.toFloat(), 1.0f); */
-		/* g.setColour(juce::Colours::purple); */
-		/* g.fillEllipse(sliderBounds.toFloat()); */
+		g.setColour(customSlider->isEnabled() ? juce::Colours::orange : juce::Colours::grey);
+		g.drawEllipse(sliderBounds.toFloat(), 1.0f);
+		g.setColour(customSlider->isEnabled() ? juce::Colours::purple : juce::Colours::darkgrey);
+		g.fillEllipse(sliderBounds.toFloat());
 
 		auto center = sliderBounds.getCentre();
-		/* juce::Path path; */
-		/* juce::Rectangle<float> pointer; */
-		/* const int margin = 2; */
-		/* pointer.setLeft((float)(center.getX() - margin)); */
-		/* pointer.setRight((float)(center.getX() + margin)); */
-		/* pointer.setTop((float)sliderBounds.getY()); */
-		/* pointer.setBottom((float)center.getY() - (float)customSlider->getTextHeight() * 1.8f); */
-		/* path.addRoundedRectangle(pointer, 2.0f); */
+		juce::Path path;
+		juce::Rectangle<float> pointer;
+		const int margin = 2;
+		pointer.setLeft((float)(center.getX() - margin));
+		pointer.setRight((float)(center.getX() + margin));
+		pointer.setTop((float)sliderBounds.getY());
+		pointer.setBottom((float)center.getY() - (float)customSlider->getTextHeight() * 1.8f);
+		path.addRoundedRectangle(pointer, 2.0f);
 
-		/* auto rotateAngle = juce::jmap(sliderPosProportional, 0.0f, 1.0f, rotaryStartAngle, rotaryEndAngle); */
-		/* path.applyTransform(juce::AffineTransform().rotated(rotateAngle, (float)center.getX(), (float)center.getY())); */
-		/* g.setColour(juce::Colours::green); */
-		/*         g.fillPath(path); */
-
-		auto knobDiameter = juce::jmin(width, height);
-		auto knobBounds = juce::Rectangle<int>(x, y, knobDiameter, knobDiameter);
 		auto rotateAngle = juce::jmap(sliderPosProportional, 0.0f, 1.0f, rotaryStartAngle, rotaryEndAngle);
-
-		auto image = customSlider->knob.get();
-		image->setSize(knobDiameter, knobDiameter);
-		image->setTransform(
-			juce::AffineTransform::rotation(rotateAngle, image->getDrawableBounds().getCentreX(), image->getDrawableBounds().getCentreY()));
-		image->drawWithin(g, knobBounds.toFloat(), juce::RectanglePlacement::stretchToFit, 1.0f);
+		path.applyTransform(juce::AffineTransform().rotated(rotateAngle, (float)center.getX(), (float)center.getY()));
+		g.setColour(juce::Colours::green);
+		g.fillPath(path);
 
 		g.setFont((float)customSlider->getTextHeight());
 		auto textWidth = g.getCurrentFont().getStringWidth(customSlider->getDisplayText());
