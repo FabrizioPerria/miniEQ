@@ -14,6 +14,8 @@ class ResponseCurveComponent : public juce::Component, public juce::AudioProcess
 	void paint(juce::Graphics &g) override;
 	void resized() override;
 
+	void toggleAnalysisEnablement(bool enabled);
+
   private:
 	void parameterValueChanged(int parameterIndex, float newValue) override;
 	void parameterGestureChanged(int parameterIndex, bool gestureIsStarting) override;
@@ -25,6 +27,7 @@ class ResponseCurveComponent : public juce::Component, public juce::AudioProcess
 	juce::Rectangle<float> getRenderArea();
 	juce::Rectangle<float> getAnalysisArea();
 
+	juce::Atomic<bool> analysisEnabled {true};
 	juce::Atomic<bool> parametersChanged {false};
 	MonoFilter drawChannel;
 	juce::Image background;

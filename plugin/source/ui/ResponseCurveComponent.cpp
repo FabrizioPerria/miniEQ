@@ -27,8 +27,11 @@ void ResponseCurveComponent::paint(juce::Graphics &g)
 
 	auto drawResponseArea = getAnalysisArea();
 
-	leftChannelSpectrum.drawNextFrameOfSpectrum(g, juce::Colours::limegreen);
-	rightChannelSpectrum.drawNextFrameOfSpectrum(g, juce::Colours::skyblue);
+	if (analysisEnabled.get())
+	{
+		leftChannelSpectrum.drawNextFrameOfSpectrum(g, juce::Colours::limegreen);
+		rightChannelSpectrum.drawNextFrameOfSpectrum(g, juce::Colours::skyblue);
+	}
 
 	auto w = drawResponseArea.toNearestInt().getWidth();
 
@@ -189,8 +192,11 @@ juce::Rectangle<float> ResponseCurveComponent::getAnalysisArea()
 
 void ResponseCurveComponent::timerCallback()
 {
-	leftChannelSpectrum.process((float)pluginProcessor.getSampleRate(), getAnalysisArea());
-	rightChannelSpectrum.process((float)pluginProcessor.getSampleRate(), getAnalysisArea());
+	if (analysisEnabled.get())
+	{
+		leftChannelSpectrum.process((float)pluginProcessor.getSampleRate(), getAnalysisArea());
+		rightChannelSpectrum.process((float)pluginProcessor.getSampleRate(), getAnalysisArea());
+	}
 
 	if (parametersChanged.compareAndSetBool(false, true))
 	{
@@ -208,4 +214,9 @@ void ResponseCurveComponent::parameterValueChanged(int parameterIndex, float new
 void ResponseCurveComponent::parameterGestureChanged(int parameterIndex, bool gestureIsStarting)
 {
 	juce::ignoreUnused(parameterIndex, gestureIsStarting);
+}
+
+void ResponseCurveComponent::toggleAnalysisEnablement(bool enabled)
+{
+	analysisEnabled.set(!enabled);
 }

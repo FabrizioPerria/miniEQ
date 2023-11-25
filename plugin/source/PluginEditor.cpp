@@ -28,22 +28,38 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor(AudioPluginAudi
 	lowCutSlopeSlider.addLabel(1.f, "48dB/Oct");
 	highCutSlopeSlider.addLabel(0.f, "12dB/Oct");
 	highCutSlopeSlider.addLabel(1.f, "48dB/Oct");
-	
+
 	SafePointer<AudioPluginAudioProcessorEditor> safeThis(this);
-	lowCutBypass.onClick = [safeThis]() { 
-		safeThis->lowCutFreqSlider.setEnabled(!safeThis->lowCutBypass.getToggleState());
-		safeThis->lowCutSlopeSlider.setEnabled(!safeThis->lowCutBypass.getToggleState());
-		};
+	lowCutBypass.onClick = [safeThis]() {
+		if (auto components = safeThis.getComponent())
+		{
+			components->lowCutFreqSlider.setEnabled(!safeThis->lowCutBypass.getToggleState());
+			components->lowCutSlopeSlider.setEnabled(!safeThis->lowCutBypass.getToggleState());
+		}
+	};
 
 	highCutBypass.onClick = [safeThis]() {
-		safeThis->highCutFreqSlider.setEnabled(!safeThis->highCutBypass.getToggleState());
-		safeThis->highCutSlopeSlider.setEnabled(!safeThis->highCutBypass.getToggleState());
+		if (auto components = safeThis.getComponent())
+		{
+			components->highCutFreqSlider.setEnabled(!safeThis->highCutBypass.getToggleState());
+			components->highCutSlopeSlider.setEnabled(!safeThis->highCutBypass.getToggleState());
+		}
 	};
 
 	peakBypass.onClick = [safeThis]() {
-		safeThis->peakFreqSlider.setEnabled(!safeThis->peakBypass.getToggleState());
-		safeThis->peakGainSlider.setEnabled(!safeThis->peakBypass.getToggleState());
-		safeThis->peakQualitySlider.setEnabled(!safeThis->peakBypass.getToggleState());
+		if (auto components = safeThis.getComponent())
+		{
+			components->peakFreqSlider.setEnabled(!safeThis->peakBypass.getToggleState());
+			components->peakGainSlider.setEnabled(!safeThis->peakBypass.getToggleState());
+			components->peakQualitySlider.setEnabled(!safeThis->peakBypass.getToggleState());
+		}
+	};
+	
+	analyzerEnabled.onClick = [safeThis]() {
+		if (auto components = safeThis.getComponent())
+		{
+			components->responseCurveComponent.toggleAnalysisEnablement(safeThis->analyzerEnabled.getToggleState());
+		}
 	};
 
 	addAndMakeVisible(peakFreqSlider);
