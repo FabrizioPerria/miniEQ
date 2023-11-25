@@ -30,6 +30,7 @@ class SliderWithLabelsComponent : public juce::Slider
 	};
 
 	juce::Array<LabelWithPosition> labels;
+	std::unique_ptr<juce::Drawable> knob;
 
   private:
 	juce::RangedAudioParameter *param;

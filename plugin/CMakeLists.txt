@@ -19,6 +19,8 @@ juce_add_binary_data(BinaryData
     SOURCES 
         resources/volume.svg
         resources/power.svg
+        resources/knob.svg
+        resources/knob.png
 )
 
 get_target_property(juce_library_code ${PROJECT_NAME} JUCE_GENERATED_SOURCES_DIRECTORY)

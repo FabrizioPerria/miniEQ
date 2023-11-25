@@ -11,9 +11,6 @@ class BypassButtonComponent : public juce::ToggleButton
 	BypassButtonComponent(juce::AudioProcessorValueTreeState &apvts, const juce::String &parameterID, SVGData svg);
 	~BypassButtonComponent() override;
 
-	/* void paint(juce::Graphics &g) override; */
-	/* void resized() override; */
-
 	std::unique_ptr<juce::Drawable> buttonImage;
 	std::unique_ptr<juce::Drawable> buttonImageSelected;
 

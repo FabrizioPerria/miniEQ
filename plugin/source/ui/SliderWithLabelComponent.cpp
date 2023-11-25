@@ -1,9 +1,11 @@
 #include "ui/SliderWithLabelComponent.h"
+#include <BinaryData.h>
 
 SliderWithLabelsComponent::SliderWithLabelsComponent(juce::RangedAudioParameter &parameter, const juce::String &unit)
 	: juce::Slider(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag, juce::Slider::TextEntryBoxPosition::NoTextBox),
 	  param(&parameter), suffix(unit)
 {
+	knob = juce::Drawable::createFromImageData(BinaryData::knob_png, BinaryData::knob_pngSize);
 	setLookAndFeel(&lnf);
 }
 
